@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi, api, useAdminStore } from '@/lib/api-client'
 import type {
+  AdminCategory,
   AdminOffer,
   AdminStats,
   AdminStore,
@@ -89,10 +90,6 @@ export function useAdminStores() {
     queryFn: () => adminApi<{ stores: AdminStore[] }>('/api/admin/stores', token),
     enabled: !!token,
   })
-}
-
-export interface AdminCategory extends Category {
-  offersCount: number
 }
 
 export function useAdminCategories() {
@@ -210,13 +207,17 @@ export function useDeleteStore() {
   })
 }
 
+type SaveCategoryInput =
+  | (CategoryInput & { id?: undefined })
+  | ({ id: number } & Partial<CategoryInput>)
+
 export function useSaveCategory() {
   const token = useAdmin()
   const invalidate = useInvalidate()
   return useMutation({
-    mutationFn: async (input: CategoryInput & { id?: number }) => {
+    mutationFn: async (input: SaveCategoryInput) => {
       const { id, ...body } = input
-      return id
+      return id !== undefined
         ? adminApi<{ category: AdminCategory }>(
             `/api/admin/categories/${id}`,
             token,
