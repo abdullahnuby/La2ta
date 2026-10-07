@@ -1,0 +1,170 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-cairo), "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-cairo), ui-monospace, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+}
+
+/* LA2TA — warm "hot deals" palette (no blue/indigo) */
+:root {
+  --radius: 0.875rem;
+  --background: oklch(0.994 0.005 85);
+  --foreground: oklch(0.25 0.022 50);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.022 50);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.022 50);
+  --primary: oklch(0.646 0.222 41.116);
+  --primary-foreground: oklch(0.985 0.01 80);
+  --secondary: oklch(0.955 0.02 75);
+  --secondary-foreground: oklch(0.33 0.045 50);
+  --muted: oklch(0.965 0.008 80);
+  --muted-foreground: oklch(0.52 0.022 55);
+  --accent: oklch(0.955 0.032 65);
+  --accent-foreground: oklch(0.38 0.08 45);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0.01 80);
+  --border: oklch(0.915 0.016 70);
+  --input: oklch(0.915 0.016 70);
+  --ring: oklch(0.646 0.222 41.116);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.769 0.188 70.08);
+  --chart-3: oklch(0.828 0.189 84.429);
+  --chart-4: oklch(0.577 0.245 27.325);
+  --chart-5: oklch(0.704 0.191 22.216);
+  --sidebar: oklch(0.985 0.005 80);
+  --sidebar-foreground: oklch(0.25 0.022 50);
+  --sidebar-primary: oklch(0.646 0.222 41.116);
+  --sidebar-primary-foreground: oklch(0.985 0.01 80);
+  --sidebar-accent: oklch(0.955 0.02 75);
+  --sidebar-accent-foreground: oklch(0.33 0.045 50);
+  --sidebar-border: oklch(0.915 0.016 70);
+  --sidebar-ring: oklch(0.646 0.222 41.116);
+}
+
+.dark {
+  --background: oklch(0.17 0.012 50);
+  --foreground: oklch(0.96 0.012 80);
+  --card: oklch(0.215 0.015 50);
+  --card-foreground: oklch(0.96 0.012 80);
+  --popover: oklch(0.215 0.015 50);
+  --popover-foreground: oklch(0.96 0.012 80);
+  --primary: oklch(0.705 0.213 47.604);
+  --primary-foreground: oklch(0.17 0.02 45);
+  --secondary: oklch(0.27 0.02 55);
+  --secondary-foreground: oklch(0.96 0.012 80);
+  --muted: oklch(0.26 0.016 55);
+  --muted-foreground: oklch(0.71 0.018 70);
+  --accent: oklch(0.3 0.05 55);
+  --accent-foreground: oklch(0.95 0.02 75);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0.01 80);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.705 0.213 47.604);
+  --chart-1: oklch(0.705 0.213 47.604);
+  --chart-2: oklch(0.769 0.188 70.08);
+  --chart-3: oklch(0.828 0.189 84.429);
+  --chart-4: oklch(0.704 0.191 22.216);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.215 0.015 50);
+  --sidebar-foreground: oklch(0.96 0.012 80);
+  --sidebar-primary: oklch(0.705 0.213 47.604);
+  --sidebar-primary-foreground: oklch(0.17 0.02 45);
+  --sidebar-accent: oklch(0.27 0.02 55);
+  --sidebar-accent-foreground: oklch(0.96 0.012 80);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.705 0.213 47.604);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+    /* native-app feel: no gray flash on tap */
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 25%, transparent);
+  }
+}
+
+@layer utilities {
+  /* iOS safe-area bottom padding (notch / home indicator) */
+  .pb-safe {
+    padding-bottom: max(0.625rem, env(safe-area-inset-bottom));
+  }
+
+  /* Hide scrollbars for horizontal chip rows / carousels */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Pretty slim scrollbar for long lists (admin tables etc.) */
+  .nice-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--primary) 45%, transparent) transparent;
+  }
+  .nice-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .nice-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .nice-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--primary) 40%, transparent);
+    border-radius: 9999px;
+  }
+  .nice-scroll::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--primary) 65%, transparent);
+  }
+}
