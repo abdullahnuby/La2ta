@@ -1,3 +1,4 @@
+
 // LA2TA — Shared types
 
 export type OfferType =
@@ -88,6 +89,7 @@ export interface AdminOffer extends PublicOffer {
   storeId: number
   storeName: string
   categoryId: number | null
+  categoryName: string | null
   status: OfferStatus
   impressions: number
   views: number
