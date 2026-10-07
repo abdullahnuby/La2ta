@@ -7,6 +7,24 @@ function normalize(value: string) {
   return value.trim().toLocaleLowerCase('ar-EG')
 }
 
+function imageUrlsForOffer(offer: any): string[] {
+  const fromGallery = Array.isArray(offer.image_urls)
+    ? offer.image_urls
+        .filter((url: unknown): url is string => typeof url === 'string')
+        .map((url) => url.trim())
+        .filter(Boolean)
+        .slice(0, 5)
+    : []
+
+  if (fromGallery.length > 0) return fromGallery
+
+  const legacy = typeof offer.image_url === 'string'
+    ? offer.image_url.trim()
+    : ''
+
+  return legacy ? [legacy] : []
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -30,8 +48,6 @@ export async function GET(req: NextRequest) {
 
     const now = new Date().toISOString()
 
-    // Lazy expiration keeps the public feed and admin dashboard truthful
-    // without requiring a separate cron job.
     await dbRequest('offers', {
       method: 'PATCH',
       query: {
@@ -62,7 +78,7 @@ export async function GET(req: NextRequest) {
     const data = await dbRequest<any[]>('offers', {
       query: {
         select:
-          'id,title,description,image_url,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,created_at,category:categories(id,name,slug,icon)',
+          'id,title,description,image_url,image_urls,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,created_at,category:categories(id,name,slug,icon)',
         status: 'eq.ACTIVE',
         start_at: `lte.${now}`,
         end_at: `gt.${now}`,
@@ -91,20 +107,25 @@ export async function GET(req: NextRequest) {
     const offers = isPaginated ? filtered : filtered.slice(0, 100)
 
     return NextResponse.json({
-      offers: offers.map((o) => ({
-        id: o.id,
-        title: o.title,
-        description: o.description,
-        imageUrl: o.image_url,
-        oldPrice: o.old_price,
-        newPrice: o.new_price,
-        discountPercentage: o.discount_percentage,
-        offerType: o.offer_type,
-        isFeatured: o.is_featured,
-        startAt: o.start_at,
-        endAt: o.end_at,
-        category: o.category ?? null,
-      })),
+      offers: offers.map((o) => {
+        const imageUrls = imageUrlsForOffer(o)
+
+        return {
+          id: o.id,
+          title: o.title,
+          description: o.description,
+          imageUrl: imageUrls[0] ?? '',
+          imageUrls,
+          oldPrice: o.old_price,
+          newPrice: o.new_price,
+          discountPercentage: o.discount_percentage,
+          offerType: o.offer_type,
+          isFeatured: o.is_featured,
+          startAt: o.start_at,
+          endAt: o.end_at,
+          category: o.category ?? null,
+        }
+      }),
       page,
       limit,
       hasMore: isPaginated && filtered.length === limit,

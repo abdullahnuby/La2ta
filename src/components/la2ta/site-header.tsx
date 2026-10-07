@@ -14,7 +14,13 @@ function ThemeToggle() {
       size="icon"
       className="size-9 rounded-xl border-input bg-card"
       aria-label="تبديل الوضع الليلي"
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      onClick={() =>
+        setTheme(
+          resolvedTheme === 'dark'
+            ? 'light'
+            : 'dark'
+        )
+      }
     >
       <Sun className="size-4 hidden dark:block" />
       <Moon className="size-4 dark:hidden" />
@@ -22,13 +28,12 @@ function ThemeToggle() {
   )
 }
 
-/** Compact sticky app bar — one thumb-reachable row */
 export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
       <div className="flex h-16 items-center justify-between gap-3 px-4">
         <a
-          href="#/"
+          href="/"
           className="flex min-w-0 items-center gap-2.5 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           aria-label="لقطة — الرئيسية"
         >
