@@ -2,70 +2,81 @@
 
 # 🔥 لقطة | LA2TA
 
-**لقط أحسن عرض في الأقصر** — منصة محلية لاكتشاف عروض الأنشطة التجارية في الأقصر، وتوصيل العميل للمحل عبر الموقع أو الاتصال أو WhatsApp.
+**لقط أحسن عرض في الأقصر** — منصة محلية لاكتشاف العروض والخصومات، وتوصيل العميل للمحل عبر الموقع أو الاتصال أو WhatsApp.
 
-MVP v0.2 — **Mobile First** ✅ | عربي RTL بالكامل | بدون تسجيل ولا سلة ولا دفع
+الإصدار الحالي مُجهّز للإنتاج: Next.js + Supabase Postgres + Supabase Storage + Vercel.
 
 </div>
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 | Layer | Tech |
 |---|---|
-| Framework | Next.js 16 (App Router) + React 19 + TypeScript |
-| UI | Tailwind CSS 4 + shadcn/ui + Framer Motion + خط Cairo |
-| DB | Prisma ORM + SQLite (`db/custom.db`) |
+| Framework | Next.js 16 App Router + React 19 + TypeScript |
+| UI | Tailwind CSS 4 + shadcn/ui + Framer Motion + Cairo |
+| Database | Supabase Postgres |
+| Storage | Supabase Storage (`offer-images`) |
 | State | TanStack Query + Zustand |
+| Hosting | Vercel |
 
-## 🚀 التشغيل (Bun)
-
-```bash
-bun install          # تثبيت الحزم
-bun run db:generate  # توليد Prisma Client
-bun run dev          # التشغيل → http://localhost:3000
-```
-
-> **بالـ Node/npm بدلًا من bun:** `npm install` ثم `npx prisma generate` ثم `npm run dev`
-
-قاعدة البيانات **مرفقة وفيها بيانات جاهزة**: 10 تصنيفات + 4 محلات + 18 عرضًا بصور.
-للبدء من الصفر:
+## تشغيل محلي
 
 ```bash
-bun run db:push      # إعادة إنشاء الجداول
-bun run db:seed      # البيانات التجريبية (طيبة + 3 محلات)
+npm install
+npm run dev
 ```
 
-> لمستخدمي npm: `npx tsx prisma/seed.ts` بدلًا من `bun run db:seed`
+متغيرات البيئة المطلوبة موجودة في `.env.example`.
 
-## 🔐 لوحة الإدارة
+## Supabase
 
-- من الفوتر: **«لوحة التحكم»** أو مباشرة `/#/admin`
-- كلمة المرور: `la2ta2024` (عدّلها من `.env` ← `ADMIN_PASSWORD`)
-- التبويبات: **نظرة عامة** (إحصائيات + أعلى العروض) / **العروض** (إضافة وتعديل، نشر/إيقاف/مسودة، تمييز بنجمة، رفع صورة، حذف بتأكيد) / **المحلات** (إضافة، إظهار/إخفاء، تعديل، حذف) / **التصنيفات** (ترتيب ↑↓، إظهار/إخفاء، CRUD)
+نفّذ الملف:
 
-## 📁 الهيكل
-
-```
-prisma/schema.prisma     Store / Category / Offer (+ حقول analytics)
-prisma/seed.ts           بيانات تجريبية — طيبة Store #1 + 3 محلات demo
-src/app/page.tsx         صفحة واحدة SPA — هاش-راوتر: #/ و #/o/{id} و #/admin
-src/app/api/             13 مسار API (عام + إداري)
-src/components/la2ta/    17 مكوّن واجهة
-src/lib/                 types / format / admin-auth / api-client
-public/uploads/seed/     صور العروض المولّدة
+```text
+supabase/migrations/20261007203100_initial_la2ta.sql
 ```
 
-## 🔑 قرارات أساسية (من الـ PRD)
+الملف ينشئ جداول `stores` و`categories` و`offers`، الفهارس، تحديث `updated_at` تلقائيًا، وBucket الصور `offer-images`.
 
-- **اسم المحل مخفي في كروت العروض** — يظهر فقط في صفحة التفاصيل (إثارة الفضول)، والـ API العام لا يُرجع أي بيانات المحل إطلاقًا
-- معمارية **Generic**: أي نشاط تجاري = Store + Offers، والتصنيفات مُدارة بالكامل من قاعدة البيانات
-- العرض ينتهي تلقائيًا حسب `endAt` (يتحوّل إلى `EXPIRED` بدون تدخل)
-- تتبّع مدمج لكل عرض: impressions / views / map / call / whatsapp / shares
-- أزرار التواصل روابط خارجية فقط: Google Maps (بالإحداثيات) + `tel:` + `wa.me` — لا خرائط داخلية ولا نظام رسائل
+**مهم:** قاعدة الإنتاج تبدأ بدون بيانات تجريبية حتى لا يتم نشر أسماء وأرقام وهمية للعامة. أضف البيانات الحقيقية من لوحة التحكم.
 
-## 📦 قبل الإنتاج (Post-MVP)
+## Environment Variables
 
-- استبدال SQLite بـ **PostgreSQL (Supabase)** — نفس الـ schema تقريبًا بدون تغيير
-- جلسات إدارة حقيقية بدل الـ token البسيط
-- رفع الصور على تخزين سحابي (Supabase Storage / S3) بدل `public/uploads`
-- النشر على **Vercel** مباشرة
+```env
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
+LA2TA_ADMIN_PASSWORD=ضع-كلمة-مرور-قوية-هنا
+```
+
+`SUPABASE_SECRET_KEY` و`LA2TA_ADMIN_PASSWORD` أسرار server-only ولا يتم وضعهما في `NEXT_PUBLIC_*`.
+
+## لوحة الإدارة
+
+افتح:
+
+```text
+/#/admin
+```
+
+جلسة الإدارة محفوظة في **HttpOnly Secure cookie** لمدة 7 أيام، ولا يتم تخزين كلمة المرور أو token الإدارة في `localStorage`.
+
+## الصور
+
+رفع الصور من لوحة التحكم يتم إلى Supabase Storage بدل الكتابة على filesystem؛ وهذا يجعل الرفع متوافقًا مع بيئة Vercel serverless.
+
+## الإنتاج
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Vercel يجب أن يكون:
+
+```text
+Framework: Next.js
+Build Command: npm run build
+Install Command: npm install
+Root Directory: .
+```
