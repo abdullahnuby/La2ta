@@ -2,12 +2,11 @@
 
 ## Supabase
 
-Production project:
-- Project ref: `gzrmmpzbbmoakhpgtvrc`
-- Region: `eu-west-1`
-- API URL: `https://gzrmmpzbbmoakhpgtvrc.supabase.co`
+La2ta production project:
+- API URL: `https://kkytfnksvqclxxphkqfg.supabase.co`
 
-The production schema is already applied. The following La2ta tables are intentionally empty until real business data is entered:
+The La2ta schema must be applied to this project before the first production content is added.
+The following tables are intentionally empty until real business data is entered:
 
 - `public.stores`
 - `public.categories`
@@ -16,12 +15,15 @@ The production schema is already applied. The following La2ta tables are intenti
 Storage bucket:
 - `offer-images` (public)
 
+Migration:
+- `supabase/migrations/20261007203100_initial_la2ta.sql`
+
 ## Vercel environment variables
 
 Set these for Production, Preview, and Development as appropriate:
 
 ```env
-SUPABASE_URL=https://gzrmmpzbbmoakhpgtvrc.supabase.co
+SUPABASE_URL=https://kkytfnksvqclxxphkqfg.supabase.co
 SUPABASE_SECRET_KEY=YOUR_SUPABASE_SECRET_KEY
 LA2TA_ADMIN_PASSWORD=YOUR_STRONG_ADMIN_PASSWORD
 ```
@@ -40,7 +42,7 @@ Recommended settings:
 - Build command: `npm run build`
 - Node.js: 22
 
-No standalone output configuration is required.
+Do not use a custom standalone output configuration.
 
 ## First production smoke test
 
@@ -58,4 +60,6 @@ No standalone output configuration is required.
 
 ## Security notes
 
-Admin credentials are kept server-side and the session is stored in an HttpOnly cookie. Offer images are stored in Supabase Storage instead of the Vercel filesystem. The La2ta tables have RLS enabled and are accessed by the server with the Supabase secret key.
+Admin credentials are kept server-side and the session is stored in an HttpOnly cookie. Offer images are stored in Supabase Storage instead of the Vercel filesystem. The La2ta tables have RLS enabled and server routes access them with the Supabase secret key.
+
+The repository contains no production secrets or demo business rows.

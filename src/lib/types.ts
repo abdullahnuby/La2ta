@@ -39,6 +39,10 @@ export interface Category extends PublicCategory {
   isActive: boolean
 }
 
+export interface AdminCategory extends Category {
+  offersCount: number
+}
+
 /**
  * Offer as exposed in lists — ⚠️ intentionally contains NO store fields.
  * The store is revealed only inside the offer details page (curiosity funnel).

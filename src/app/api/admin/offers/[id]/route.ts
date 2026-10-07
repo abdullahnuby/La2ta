@@ -1,4 +1,3 @@
-```ts
 import { NextRequest, NextResponse } from 'next/server'
 import { dbRequest, supabaseError } from '@/lib/db'
 import { computeDiscount, requireAdmin } from '@/lib/admin-auth'
@@ -147,4 +146,3 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
   }
 }
-```
