@@ -26,7 +26,6 @@ export const OFFER_STATUS_LABELS: Record<OfferStatus, string> = {
   EXPIRED: 'منتهي',
 }
 
-/** Category as exposed publicly */
 export interface PublicCategory {
   id: number
   name: string
@@ -43,10 +42,6 @@ export interface AdminCategory extends Category {
   offersCount: number
 }
 
-/**
- * Offer as exposed in lists — ⚠️ intentionally contains NO store fields.
- * The store is revealed only inside the offer details page (curiosity funnel).
- */
 export interface PublicOffer {
   id: number
   title: string
@@ -78,7 +73,6 @@ export interface OfferDetails extends PublicOffer {
   store: StoreInfo | null
 }
 
-/** Admin shapes */
 export interface AdminStore extends StoreInfo {
   isActive: boolean
   offersCount?: number
