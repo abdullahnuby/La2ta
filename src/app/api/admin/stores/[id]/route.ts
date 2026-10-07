@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!existing) return NextResponse.json({ error: 'المحل غير موجود' }, { status: 404 })
 
     const body = await req.json().catch(() => ({}))
-    const data: Record<string, unknown> = {}
+    const data: { [key: string]: string | number | boolean | null } = {}
     if (body.name !== undefined) {
       const name = String(body.name).trim()
       if (!name) return NextResponse.json({ error: 'اسم المحل مطلوب' }, { status: 400 })
