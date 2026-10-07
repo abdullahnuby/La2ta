@@ -15,7 +15,7 @@ export default function AdminPanel() {
   const { token, ready, hydrate, logout } = useAdminStore()
 
   useEffect(() => {
-    hydrate()
+    void hydrate()
   }, [hydrate])
 
   if (!ready) {
@@ -46,7 +46,7 @@ export default function AdminPanel() {
           </Button>
           <Button
             variant="ghost"
-            onClick={logout}
+            onClick={() => void logout()}
             className="gap-1.5 rounded-xl font-bold text-destructive hover:text-destructive"
           >
             <LogOut className="size-4" />

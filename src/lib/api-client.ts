@@ -5,31 +5,33 @@ import { create } from 'zustand'
 import type { TrackEvent } from '@/lib/types'
 
 /* ------------------------------------------------------------------ */
-/* Admin token store (zustand + localStorage persistence)             */
+/* Admin session state (the real credential stays in an HttpOnly cookie) */
 /* ------------------------------------------------------------------ */
 
 interface AdminState {
   token: string | null
   ready: boolean
   setToken: (t: string | null) => void
-  hydrate: () => void
-  logout: () => void
+  hydrate: () => Promise<void>
+  logout: () => Promise<void>
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
   token: null,
   ready: false,
-  setToken: (t) => {
-    if (t) localStorage.setItem('la2ta_admin', t)
-    else localStorage.removeItem('la2ta_admin')
-    set({ token: t, ready: true })
+  setToken: (t) => set({ token: t, ready: true }),
+  hydrate: async () => {
+    try {
+      const res = await fetch('/api/admin/session', { cache: 'no-store' })
+      const body = await res.json().catch(() => ({}))
+      set({ token: body.authenticated ? 'session' : null, ready: true })
+    } catch {
+      set({ token: null, ready: true })
+    }
   },
-  hydrate: () => {
-    set({ token: localStorage.getItem('la2ta_admin'), ready: true })
-  },
-  logout: () => {
-    localStorage.removeItem('la2ta_admin')
-    set({ token: null })
+  logout: async () => {
+    await fetch('/api/admin/logout', { method: 'POST' }).catch(() => {})
+    set({ token: null, ready: true })
   },
 }))
 
@@ -55,18 +57,21 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function adminApi<T>(
   path: string,
-  token: string | null,
+  _token: string | null,
   init?: RequestInit
 ): Promise<T> {
   const res = await fetch(path, {
     ...init,
+    cache: 'no-store',
     headers: {
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { 'x-admin-token': token } : {}),
       ...(init?.headers || {}),
     },
   })
-  if (res.status === 401) throw new UnauthorizedError()
+  if (res.status === 401) {
+    useAdminStore.getState().setToken(null)
+    throw new UnauthorizedError()
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({} as { error?: string }))
     throw new Error(body.error || `طلب فشل (${res.status})`)

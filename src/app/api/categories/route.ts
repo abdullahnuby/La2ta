@@ -1,21 +1,29 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { dbRequest, supabaseError } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-/** GET /api/categories — active categories ordered for the homepage chips */
 export async function GET() {
-  const categories = await db.category.findMany({
-    where: { isActive: true },
-    orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      icon: true,
-      sortOrder: true,
-      isActive: true,
-    },
-  })
-  return NextResponse.json({ categories })
+  try {
+    const data = await dbRequest<any[]>('categories', {
+      query: {
+        select: 'id,name,slug,icon,sort_order,is_active',
+        is_active: 'eq.true',
+        order: 'sort_order.asc,id.asc',
+      },
+    })
+
+    return NextResponse.json({
+      categories: (data ?? []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        icon: c.icon,
+        sortOrder: c.sort_order,
+        isActive: c.is_active,
+      })),
+    })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
+  }
 }

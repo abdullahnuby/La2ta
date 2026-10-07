@@ -5,9 +5,8 @@ import Image from 'next/image'
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { uploadImage } from '@/hooks/use-la2ta-api'
-import { useAdminStore } from '@/lib/api-client'
 
-/** Image picker: file upload → /api/admin/upload, or paste a URL directly */
+/** Image picker: file upload → Supabase Storage, or paste a URL directly */
 export default function ImageUpload({
   value,
   onChange,
@@ -15,14 +14,13 @@ export default function ImageUpload({
   value: string
   onChange: (url: string) => void
 }) {
-  const token = useAdminStore((s) => s.token)
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
   const onFile = async (file: File) => {
     setUploading(true)
     try {
-      const { url } = await uploadImage(file, token)
+      const { url } = await uploadImage(file)
       onChange(url)
     } catch (err) {
       throw err
@@ -77,7 +75,7 @@ export default function ImageUpload({
         dir="ltr"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="https://... أو /uploads/... (اختياري — رابط صورة"
+        placeholder="https://... (اختياري — رابط صورة)"
         className="rounded-xl text-xs"
       />
       <input

@@ -244,12 +244,11 @@ export function useDeleteCategory() {
   })
 }
 
-export async function uploadImage(file: File, token: string | null) {
+export async function uploadImage(file: File) {
   const fd = new FormData()
   fd.append('file', file)
   const res = await fetch('/api/admin/upload', {
     method: 'POST',
-    headers: token ? { 'x-admin-token': token } : {},
     body: fd,
   })
   if (!res.ok) {

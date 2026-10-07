@@ -27,7 +27,7 @@ export default function AdminLogin() {
       })
       const body = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(body.error || 'كلمة المرور غلط')
-      setToken(body.token)
+      setToken('session')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'حصل خطأ')
     } finally {

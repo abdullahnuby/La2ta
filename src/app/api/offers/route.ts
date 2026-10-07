@@ -1,64 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import type { Prisma } from '@prisma/client'
+import { dbRequest, supabaseError } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * GET /api/offers — current, valid offers.
- * ⚠️ Store fields are intentionally EXCLUDED here: the card must not reveal
- * the store name (curiosity funnel — see PRD §7/§8).
- * Query params: q (search), cat (category slug), featured=1
- */
+function normalize(value: string) {
+  return value.trim().toLocaleLowerCase('ar-EG')
+}
+
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const q = (searchParams.get('q') || '').trim()
-  const cat = (searchParams.get('cat') || '').trim()
-  const featured = searchParams.get('featured') === '1'
+  try {
+    const { searchParams } = new URL(req.url)
+    const q = normalize(searchParams.get('q') || '')
+    const cat = normalize(searchParams.get('cat') || '')
+    const featured = searchParams.get('featured') === '1'
+    const now = new Date().toISOString()
 
-  // Lazy auto-expire: ACTIVE offers past end_at become EXPIRED (PRD §14)
-  await db.offer
-    .updateMany({
-      where: { status: 'ACTIVE', endAt: { lt: new Date() } },
-      data: { status: 'EXPIRED' },
+    // Lazy expiration keeps the admin dashboard truthful without a cron job.
+    await dbRequest('offers', {
+      method: 'PATCH',
+      query: { status: 'eq.ACTIVE', end_at: `lt.${now}` },
+      body: { status: 'EXPIRED' },
     })
-    .catch(() => {})
 
-  const now = new Date()
-  const where: Prisma.OfferWhereInput = {
-    status: 'ACTIVE',
-    startAt: { lte: now },
-    endAt: { gt: now },
-    store: { isActive: true },
+    const stores = await dbRequest<any[]>('stores', {
+      query: { select: 'id', is_active: 'eq.true' },
+    })
+    const storeIds = (stores ?? []).map((s) => s.id)
+    if (storeIds.length === 0) return NextResponse.json({ offers: [] })
+
+    const data = await dbRequest<any[]>('offers', {
+      query: {
+        select: 'id,title,description,image_url,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,created_at,category:categories(id,name,slug,icon)',
+        status: 'eq.ACTIVE',
+        start_at: `lte.${now}`,
+        end_at: `gt.${now}`,
+        store_id: `in.(${storeIds.join(',')})`,
+        order: 'is_featured.desc,created_at.desc',
+        limit: 500,
+      },
+    })
+
+    const filtered = (data ?? [])
+      .filter((o) => !featured || o.is_featured)
+      .filter((o) => !cat || normalize(o.category?.slug || '') === cat)
+      .filter((o) => {
+        if (!q) return true
+        const haystack = normalize(`${o.title || ''} ${o.description || ''}`)
+        return haystack.includes(q)
+      })
+      .slice(0, 100)
+
+    return NextResponse.json({
+      offers: filtered.map((o) => ({
+        id: o.id,
+        title: o.title,
+        description: o.description,
+        imageUrl: o.image_url,
+        oldPrice: o.old_price,
+        newPrice: o.new_price,
+        discountPercentage: o.discount_percentage,
+        offerType: o.offer_type,
+        isFeatured: o.is_featured,
+        startAt: o.start_at,
+        endAt: o.end_at,
+        category: o.category ?? null,
+      })),
+    })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
   }
-  if (cat) where.category = { slug: cat }
-  if (featured) where.isFeatured = true
-  if (q) {
-    where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-    ]
-  }
-
-  const offers = await db.offer.findMany({
-    where,
-    orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      imageUrl: true,
-      oldPrice: true,
-      newPrice: true,
-      discountPercentage: true,
-      offerType: true,
-      isFeatured: true,
-      startAt: true,
-      endAt: true,
-      category: { select: { id: true, name: true, slug: true, icon: true } },
-    },
-    take: 100,
-  })
-
-  return NextResponse.json({ offers })
 }

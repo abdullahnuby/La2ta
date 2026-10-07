@@ -1,118 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { dbRequest, supabaseError } from '@/lib/db'
 import { computeDiscount, requireAdmin } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-/** GET /api/admin/offers — all offers with store/category names */
-export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+function mapOffer(o: any) {
+  return {
+    id: o.id,
+    storeId: o.store_id,
+    storeName: o.store?.name ?? '',
+    categoryId: o.category_id,
+    categoryName: o.category?.name ?? null,
+    title: o.title,
+    description: o.description,
+    imageUrl: o.image_url,
+    oldPrice: o.old_price,
+    newPrice: o.new_price,
+    discountPercentage: o.discount_percentage,
+    offerType: o.offer_type,
+    startAt: o.start_at,
+    endAt: o.end_at,
+    isFeatured: o.is_featured,
+    status: o.status,
+    impressions: o.impressions,
+    views: o.views,
+    mapClicks: o.map_clicks,
+    callClicks: o.call_clicks,
+    whatsappClicks: o.whatsapp_clicks,
+    shares: o.shares,
+    category: o.category ? { id: o.category.id, name: o.category.name, slug: o.category.slug, icon: o.category.icon } : null,
   }
-
-  // Lazy auto-expire
-  await db.offer
-    .updateMany({
-      where: { status: 'ACTIVE', endAt: { lt: new Date() } },
-      data: { status: 'EXPIRED' },
-    })
-    .catch(() => {})
-
-  const offers = await db.offer.findMany({
-    orderBy: [{ createdAt: 'desc' }],
-    include: {
-      store: { select: { id: true, name: true } },
-      category: { select: { id: true, name: true } },
-    },
-  })
-
-  return NextResponse.json({
-    offers: offers.map((o) => ({
-      id: o.id,
-      storeId: o.storeId,
-      storeName: o.store.name,
-      categoryId: o.categoryId,
-      categoryName: o.category?.name ?? null,
-      title: o.title,
-      description: o.description,
-      imageUrl: o.imageUrl,
-      oldPrice: o.oldPrice,
-      newPrice: o.newPrice,
-      discountPercentage: o.discountPercentage,
-      offerType: o.offerType,
-      startAt: o.startAt,
-      endAt: o.endAt,
-      isFeatured: o.isFeatured,
-      status: o.status,
-      impressions: o.impressions,
-      views: o.views,
-      mapClicks: o.mapClicks,
-      callClicks: o.callClicks,
-      whatsappClicks: o.whatsappClicks,
-      shares: o.shares,
-      category: o.category
-        ? { id: o.category.id, name: o.category.name, slug: '', icon: '' }
-        : null,
-    })),
-  })
 }
 
-/** POST /api/admin/offers — create offer (PRD §22 form) */
+export async function GET(req: NextRequest) {
+  if (!requireAdmin(req)) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+  try {
+    const now = new Date().toISOString()
+    await dbRequest('offers', { method: 'PATCH', query: { status: 'eq.ACTIVE', end_at: `lt.${now}` }, body: { status: 'EXPIRED' } })
+    const data = await dbRequest<any[]>('offers', {
+      query: {
+        select: 'id,store_id,category_id,title,description,image_url,old_price,new_price,discount_percentage,offer_type,start_at,end_at,is_featured,status,impressions,views,map_clicks,call_clicks,whatsapp_clicks,shares,store:stores(id,name),category:categories(id,name,slug,icon)',
+        order: 'created_at.desc',
+      },
+    })
+    return NextResponse.json({ offers: (data ?? []).map(mapOffer) })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
+  }
+}
+
 export async function POST(req: NextRequest) {
-  if (!requireAdmin(req)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+  if (!requireAdmin(req)) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+  try {
+    const body = await req.json().catch(() => null)
+    if (!body) return NextResponse.json({ error: 'بيانات ناقصة' }, { status: 400 })
+
+    const title = String(body.title || '').trim()
+    const storeId = Number(body.storeId)
+    const categoryId = body.categoryId ? Number(body.categoryId) : null
+    const startAt = new Date(body.startAt)
+    const endAt = new Date(body.endAt)
+
+    if (!title) return NextResponse.json({ error: 'عنوان العرض مطلوب' }, { status: 400 })
+    if (!Number.isFinite(storeId)) return NextResponse.json({ error: 'لازم تختار المحل' }, { status: 400 })
+    if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime()) || endAt <= startAt) {
+      return NextResponse.json({ error: 'تواريخ العرض غير صحيحة — تاريخ النهاية لازم يكون بعد البداية' }, { status: 400 })
+    }
+
+    const store = await dbRequest<any[]>('stores', { query: { select: 'id', id: `eq.${storeId}`, limit: 1 } })
+    if (!store[0]) return NextResponse.json({ error: 'المحل غير موجود' }, { status: 400 })
+    if (categoryId != null) {
+      const category = await dbRequest<any[]>('categories', { query: { select: 'id', id: `eq.${categoryId}`, limit: 1 } })
+      if (!category[0]) return NextResponse.json({ error: 'التصنيف غير موجود' }, { status: 400 })
+    }
+
+    const oldPrice = body.oldPrice != null && body.oldPrice !== '' ? Number(body.oldPrice) : null
+    const newPrice = body.newPrice != null && body.newPrice !== '' ? Number(body.newPrice) : null
+    const status = ['ACTIVE', 'DRAFT', 'PAUSED'].includes(body.status) ? body.status : 'ACTIVE'
+
+    const rows = await dbRequest<any[]>('offers', {
+      method: 'POST', query: { select: '*' }, returnRepresentation: true, body: {
+        store_id: storeId,
+        category_id: categoryId,
+        title,
+        description: String(body.description || ''),
+        image_url: String(body.imageUrl || ''),
+        old_price: oldPrice != null && Number.isFinite(oldPrice) ? oldPrice : null,
+        new_price: newPrice != null && Number.isFinite(newPrice) ? newPrice : null,
+        discount_percentage: computeDiscount(oldPrice, newPrice),
+        offer_type: String(body.offerType || 'discount'),
+        start_at: startAt.toISOString(),
+        end_at: endAt.toISOString(),
+        is_featured: Boolean(body.isFeatured),
+        status,
+      },
+    })
+
+    return NextResponse.json({ offer: mapOffer(rows[0]) }, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
   }
-
-  const body = await req.json().catch(() => null)
-  if (!body) {
-    return NextResponse.json({ error: 'بيانات ناقصة' }, { status: 400 })
-  }
-
-  const title = String(body.title || '').trim()
-  const storeId = Number(body.storeId)
-  const startAt = new Date(body.startAt)
-  const endAt = new Date(body.endAt)
-
-  if (!title) {
-    return NextResponse.json({ error: 'عنوان العرض مطلوب' }, { status: 400 })
-  }
-  if (!Number.isFinite(storeId)) {
-    return NextResponse.json({ error: 'لازم تختار المحل' }, { status: 400 })
-  }
-  if (isNaN(startAt.getTime()) || isNaN(endAt.getTime()) || endAt <= startAt) {
-    return NextResponse.json(
-      { error: 'تواريخ العرض غير صحيحة — تاريخ النهاية لازم يكون بعد البداية' },
-      { status: 400 }
-    )
-  }
-
-  const store = await db.store.findUnique({ where: { id: storeId } })
-  if (!store) {
-    return NextResponse.json({ error: 'المحل غير موجود' }, { status: 400 })
-  }
-
-  const oldPrice = body.oldPrice != null && body.oldPrice !== '' ? Number(body.oldPrice) : null
-  const newPrice = body.newPrice != null && body.newPrice !== '' ? Number(body.newPrice) : null
-
-  const offer = await db.offer.create({
-    data: {
-      storeId,
-      categoryId: body.categoryId ? Number(body.categoryId) : null,
-      title,
-      description: String(body.description || ''),
-      imageUrl: String(body.imageUrl || ''),
-      oldPrice: oldPrice != null && !isNaN(oldPrice) ? oldPrice : null,
-      newPrice: newPrice != null && !isNaN(newPrice) ? newPrice : null,
-      discountPercentage: computeDiscount(oldPrice, newPrice),
-      offerType: String(body.offerType || 'discount'),
-      startAt,
-      endAt,
-      isFeatured: Boolean(body.isFeatured),
-      status: ['ACTIVE', 'DRAFT', 'PAUSED'].includes(body.status)
-        ? body.status
-        : 'ACTIVE',
-    },
-  })
-
-  return NextResponse.json({ offer }, { status: 201 })
 }

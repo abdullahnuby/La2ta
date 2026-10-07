@@ -1,126 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { dbRequest, supabaseError } from '@/lib/db'
 import { computeDiscount, requireAdmin } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-/** PATCH /api/admin/offers/[id] — update fields / status actions */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  if (!requireAdmin(req)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-  }
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!requireAdmin(req)) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+  const offerId = Number.parseInt((await params).id, 10)
+  if (!Number.isFinite(offerId)) return NextResponse.json({ error: 'العرض غير موجود' }, { status: 404 })
 
-  const { id } = await params
-  const offerId = Number.parseInt(id, 10)
-  if (!Number.isFinite(offerId)) {
-    return NextResponse.json({ error: 'العرض غير موجود' }, { status: 404 })
-  }
+  try {
+    const rows = await dbRequest<any[]>('offers', { query: { select: '*', id: `eq.${offerId}`, limit: 1 } })
+    const existing = rows[0]
+    if (!existing) return NextResponse.json({ error: 'العرض غير موجود' }, { status: 404 })
 
-  const existing = await db.offer.findUnique({ where: { id: offerId } })
-  if (!existing) {
-    return NextResponse.json({ error: 'العرض غير موجود' }, { status: 404 })
-  }
-
-  const body = await req.json().catch(() => ({}))
-
-  const data: Record<string, unknown> = {}
-
-  if (body.title !== undefined) {
-    const title = String(body.title).trim()
-    if (!title) {
-      return NextResponse.json({ error: 'عنوان العرض مطلوب' }, { status: 400 })
+    const body = await req.json().catch(() => ({}))
+    const data: Record<string, unknown> = {}
+    if (body.title !== undefined) {
+      const title = String(body.title).trim()
+      if (!title) return NextResponse.json({ error: 'عنوان العرض مطلوب' }, { status: 400 })
+      data.title = title
     }
-    data.title = title
-  }
-  if (body.description !== undefined) data.description = String(body.description)
-  if (body.imageUrl !== undefined) data.imageUrl = String(body.imageUrl)
+    if (body.description !== undefined) data.description = String(body.description)
+    if (body.imageUrl !== undefined) data.image_url = String(body.imageUrl)
 
-  if (body.storeId !== undefined) {
-    const storeId = Number(body.storeId)
-    const store = await db.store.findUnique({ where: { id: storeId } })
-    if (!store) {
-      return NextResponse.json({ error: 'المحل غير موجود' }, { status: 400 })
+    if (body.storeId !== undefined) {
+      const storeId = Number(body.storeId)
+      if (!Number.isFinite(storeId)) return NextResponse.json({ error: 'المحل غير موجود' }, { status: 400 })
+      const store = await dbRequest<any[]>('stores', { query: { select: 'id', id: `eq.${storeId}`, limit: 1 } })
+      if (!store[0]) return NextResponse.json({ error: 'المحل غير موجود' }, { status: 400 })
+      data.store_id = storeId
     }
-    data.storeId = storeId
-  }
-  if (body.categoryId !== undefined) {
-    data.categoryId = body.categoryId ? Number(body.categoryId) : null
-  }
 
-  let oldPrice = existing.oldPrice
-  let newPrice = existing.newPrice
-  if (body.oldPrice !== undefined) {
-    const v = body.oldPrice === null || body.oldPrice === '' ? null : Number(body.oldPrice)
-    oldPrice = v != null && !isNaN(v) ? v : null
-    data.oldPrice = oldPrice
-  }
-  if (body.newPrice !== undefined) {
-    const v = body.newPrice === null || body.newPrice === '' ? null : Number(body.newPrice)
-    newPrice = v != null && !isNaN(v) ? v : null
-    data.newPrice = newPrice
-  }
-  if (body.oldPrice !== undefined || body.newPrice !== undefined || body.recomputeDiscount) {
-    data.discountPercentage = computeDiscount(oldPrice, newPrice)
-  }
-
-  if (body.offerType !== undefined) data.offerType = String(body.offerType)
-
-  if (body.startAt !== undefined) {
-    const d = new Date(body.startAt)
-    if (isNaN(d.getTime())) {
-      return NextResponse.json({ error: 'تاريخ البداية غير صحيح' }, { status: 400 })
+    if (body.categoryId !== undefined) {
+      const categoryId = body.categoryId ? Number(body.categoryId) : null
+      if (categoryId != null) {
+        const category = await dbRequest<any[]>('categories', { query: { select: 'id', id: `eq.${categoryId}`, limit: 1 } })
+        if (!category[0]) return NextResponse.json({ error: 'التصنيف غير موجود' }, { status: 400 })
+      }
+      data.category_id = categoryId
     }
-    data.startAt = d
-  }
-  if (body.endAt !== undefined) {
-    const d = new Date(body.endAt)
-    if (isNaN(d.getTime())) {
-      return NextResponse.json({ error: 'تاريخ النهاية غير صحيح' }, { status: 400 })
+
+    let oldPrice = existing.old_price as number | null
+    let newPrice = existing.new_price as number | null
+    if (body.oldPrice !== undefined) {
+      const v = body.oldPrice === null || body.oldPrice === '' ? null : Number(body.oldPrice)
+      oldPrice = v != null && Number.isFinite(v) ? v : null
+      data.old_price = oldPrice
     }
-    data.endAt = d
-  }
-
-  // Keep end > start
-  const finalStart = (data.startAt as Date) ?? existing.startAt
-  const finalEnd = (data.endAt as Date) ?? existing.endAt
-  if (finalEnd <= finalStart) {
-    return NextResponse.json(
-      { error: 'تاريخ النهاية لازم يكون بعد البداية' },
-      { status: 400 }
-    )
-  }
-
-  if (body.isFeatured !== undefined) data.isFeatured = Boolean(body.isFeatured)
-
-  if (body.status !== undefined) {
-    if (!['ACTIVE', 'DRAFT', 'PAUSED', 'EXPIRED'].includes(body.status)) {
-      return NextResponse.json({ error: 'حالة غير صحيحة' }, { status: 400 })
+    if (body.newPrice !== undefined) {
+      const v = body.newPrice === null || body.newPrice === '' ? null : Number(body.newPrice)
+      newPrice = v != null && Number.isFinite(v) ? v : null
+      data.new_price = newPrice
     }
-    data.status = body.status
-  }
+    if (body.oldPrice !== undefined || body.newPrice !== undefined || body.recomputeDiscount) {
+      data.discount_percentage = computeDiscount(oldPrice, newPrice)
+    }
 
-  const offer = await db.offer.update({ where: { id: offerId }, data })
-  return NextResponse.json({ offer })
+    if (body.offerType !== undefined) data.offer_type = String(body.offerType)
+
+    const finalStart = body.startAt !== undefined ? new Date(body.startAt) : new Date(existing.start_at)
+    const finalEnd = body.endAt !== undefined ? new Date(body.endAt) : new Date(existing.end_at)
+    if (Number.isNaN(finalStart.getTime())) return NextResponse.json({ error: 'تاريخ البداية غير صحيح' }, { status: 400 })
+    if (Number.isNaN(finalEnd.getTime())) return NextResponse.json({ error: 'تاريخ النهاية غير صحيح' }, { status: 400 })
+    if (finalEnd <= finalStart) return NextResponse.json({ error: 'تاريخ النهاية لازم يكون بعد البداية' }, { status: 400 })
+    if (body.startAt !== undefined) data.start_at = finalStart.toISOString()
+    if (body.endAt !== undefined) data.end_at = finalEnd.toISOString()
+
+    if (body.isFeatured !== undefined) data.is_featured = Boolean(body.isFeatured)
+    if (body.status !== undefined) {
+      if (!['ACTIVE', 'DRAFT', 'PAUSED', 'EXPIRED'].includes(body.status)) return NextResponse.json({ error: 'حالة غير صحيحة' }, { status: 400 })
+      data.status = body.status
+    }
+
+    const updated = await dbRequest<any[]>('offers', {
+      method: 'PATCH', query: { id: `eq.${offerId}`, select: '*' }, body: data, returnRepresentation: true,
+    })
+    return NextResponse.json({ offer: updated[0] })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
+  }
 }
 
-/** DELETE /api/admin/offers/[id] */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  if (!requireAdmin(req)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-  }
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!requireAdmin(req)) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+  const offerId = Number.parseInt((await params).id, 10)
+  if (!Number.isFinite(offerId)) return NextResponse.json({ error: 'العرض غير موجود' }, { status: 404 })
 
-  const { id } = await params
-  const offerId = Number.parseInt(id, 10)
-  if (!Number.isFinite(offerId)) {
-    return NextResponse.json({ error: 'العرض غير موجود' }, { status: 404 })
+  try {
+    await dbRequest('offers', { method: 'DELETE', query: { id: `eq.${offerId}` } })
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
   }
-
-  await db.offer.delete({ where: { id: offerId } }).catch(() => {})
-  return NextResponse.json({ ok: true })
 }

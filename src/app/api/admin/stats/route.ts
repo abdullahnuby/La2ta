@@ -1,84 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { dbRequest, supabaseError } from '@/lib/db'
 import { requireAdmin } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 
-/** GET /api/admin/stats — dashboard overview numbers + top offers */
 export async function GET(req: NextRequest) {
-  if (!requireAdmin(req)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-  }
+  if (!requireAdmin(req)) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
 
-  // Lazy auto-expire so the dashboard reflects reality
-  await db.offer
-    .updateMany({
-      where: { status: 'ACTIVE', endAt: { lt: new Date() } },
-      data: { status: 'EXPIRED' },
-    })
-    .catch(() => {})
+  try {
+    const now = new Date().toISOString()
+    await dbRequest('offers', { method: 'PATCH', query: { status: 'eq.ACTIVE', end_at: `lt.${now}` }, body: { status: 'EXPIRED' } })
 
-  const now = new Date()
-  const [offers, stores, categories, sums] = await Promise.all([
-    db.offer.findMany({
-      select: { status: true, startAt: true, endAt: true },
-    }),
-    db.store.count(),
-    db.category.count(),
-    db.offer.aggregate({
-      _sum: {
-        impressions: true,
-        views: true,
-        mapClicks: true,
-        callClicks: true,
-        whatsappClicks: true,
-        shares: true,
+    const [offers, stores, categories, top] = await Promise.all([
+      dbRequest<any[]>('offers', { query: { select: 'status,start_at,end_at,impressions,views,map_clicks,call_clicks,whatsapp_clicks,shares' } }),
+      dbRequest<any[]>('stores', { query: { select: 'id' } }),
+      dbRequest<any[]>('categories', { query: { select: 'id' } }),
+      dbRequest<any[]>('offers', { query: { select: 'id,title,status,views,map_clicks,call_clicks,whatsapp_clicks,shares,store:stores(name)', order: 'views.desc', limit: 8 } }),
+    ])
+
+    const totals = (offers ?? []).reduce((acc, o) => {
+      acc.impressions += Number(o.impressions ?? 0)
+      acc.views += Number(o.views ?? 0)
+      acc.mapClicks += Number(o.map_clicks ?? 0)
+      acc.callClicks += Number(o.call_clicks ?? 0)
+      acc.whatsappClicks += Number(o.whatsapp_clicks ?? 0)
+      acc.shares += Number(o.shares ?? 0)
+      return acc
+    }, { impressions: 0, views: 0, mapClicks: 0, callClicks: 0, whatsappClicks: 0, shares: 0 })
+
+    return NextResponse.json({
+      totals: {
+        offers: offers?.length ?? 0,
+        active: (offers ?? []).filter((o) => o.status === 'ACTIVE' && o.start_at <= now && o.end_at > now).length,
+        stores: stores?.length ?? 0,
+        categories: categories?.length ?? 0,
+        ...totals,
       },
-    }),
-  ])
-
-  const top = await db.offer.findMany({
-    orderBy: { views: 'desc' },
-    take: 8,
-    select: {
-      id: true,
-      title: true,
-      status: true,
-      views: true,
-      mapClicks: true,
-      callClicks: true,
-      whatsappClicks: true,
-      shares: true,
-      store: { select: { name: true } },
-    },
-  })
-
-  const s = sums._sum
-  return NextResponse.json({
-    totals: {
-      offers: offers.length,
-      active: offers.filter(
-        (o) => o.status === 'ACTIVE' && o.startAt <= now && o.endAt > now
-      ).length,
-      stores,
-      categories,
-      impressions: s.impressions ?? 0,
-      views: s.views ?? 0,
-      mapClicks: s.mapClicks ?? 0,
-      callClicks: s.callClicks ?? 0,
-      whatsappClicks: s.whatsappClicks ?? 0,
-      shares: s.shares ?? 0,
-    },
-    top: top.map((o) => ({
-      id: o.id,
-      title: o.title,
-      storeName: o.store.name,
-      status: o.status,
-      views: o.views,
-      mapClicks: o.mapClicks,
-      callClicks: o.callClicks,
-      whatsappClicks: o.whatsappClicks,
-      shares: o.shares,
-    })),
-  })
+      top: (top ?? []).map((o) => ({
+        id: o.id,
+        title: o.title,
+        storeName: o.store?.name ?? '',
+        status: o.status,
+        views: o.views,
+        mapClicks: o.map_clicks,
+        callClicks: o.call_clicks,
+        whatsappClicks: o.whatsapp_clicks,
+        shares: o.shares,
+      })),
+    })
+  } catch (error) {
+    return NextResponse.json({ error: supabaseError(error) }, { status: 500 })
+  }
 }
