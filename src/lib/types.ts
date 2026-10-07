@@ -44,6 +44,7 @@ export interface AdminCategory extends Category {
 
 export interface PublicOffer {
   id: number
+  slug: string
   title: string
   description: string
   imageUrl: string

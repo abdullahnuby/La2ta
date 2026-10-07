@@ -14,9 +14,10 @@ function imageUrlsForOffer(offer: any): string[] {
 
   if (fromGallery.length > 0) return fromGallery
 
-  const legacy = typeof offer.image_url === 'string'
-    ? offer.image_url.trim()
-    : ''
+  const legacy =
+    typeof offer.image_url === 'string'
+      ? offer.image_url.trim()
+      : ''
 
   return legacy ? [legacy] : []
 }
@@ -25,7 +26,10 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const offerId = Number.parseInt((await params).id, 10)
+  const offerId = Number.parseInt(
+    (await params).id,
+    10
+  )
 
   if (!Number.isFinite(offerId)) {
     return NextResponse.json(
@@ -40,7 +44,7 @@ export async function GET(
     const rows = await dbRequest<any[]>('offers', {
       query: {
         select:
-          'id,store_id,category_id,title,description,image_url,image_urls,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,status,views,created_at,updated_at,category:categories(id,name,slug,icon),store:stores(id,name,description,phone,whatsapp,address,latitude,longitude,is_active)',
+          'id,slug,store_id,category_id,title,description,image_url,image_urls,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,status,views,created_at,updated_at,category:categories(id,name,slug,icon),store:stores(id,name,description,phone,whatsapp,address,latitude,longitude,is_active)',
         id: `eq.${offerId}`,
         status: 'eq.ACTIVE',
         start_at: `lte.${now}`,
@@ -63,6 +67,11 @@ export async function GET(
     return NextResponse.json({
       offer: {
         id: data.id,
+        slug:
+          typeof data.slug === 'string' &&
+          data.slug.trim()
+            ? data.slug.trim()
+            : `offer-${data.id}`,
         storeId: data.store_id,
         categoryId: data.category_id,
         title: data.title,
@@ -71,7 +80,8 @@ export async function GET(
         imageUrls,
         oldPrice: data.old_price,
         newPrice: data.new_price,
-        discountPercentage: data.discount_percentage,
+        discountPercentage:
+          data.discount_percentage,
         offerType: data.offer_type,
         isFeatured: data.is_featured,
         startAt: data.start_at,

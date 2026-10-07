@@ -18,11 +18,21 @@ function imageUrlsForOffer(offer: any): string[] {
 
   if (fromGallery.length > 0) return fromGallery
 
-  const legacy = typeof offer.image_url === 'string'
-    ? offer.image_url.trim()
-    : ''
+  const legacy =
+    typeof offer.image_url === 'string'
+      ? offer.image_url.trim()
+      : ''
 
   return legacy ? [legacy] : []
+}
+
+function offerSlug(offer: any): string {
+  const slug =
+    typeof offer.slug === 'string'
+      ? offer.slug.trim()
+      : ''
+
+  return slug || `offer-${offer.id}`
 }
 
 export async function GET(req: NextRequest) {
@@ -78,7 +88,7 @@ export async function GET(req: NextRequest) {
     const data = await dbRequest<any[]>('offers', {
       query: {
         select:
-          'id,title,description,image_url,image_urls,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,created_at,category:categories(id,name,slug,icon)',
+          'id,slug,title,description,image_url,image_urls,old_price,new_price,discount_percentage,offer_type,is_featured,start_at,end_at,created_at,category:categories(id,name,slug,icon)',
         status: 'eq.ACTIVE',
         start_at: `lte.${now}`,
         end_at: `gt.${now}`,
@@ -92,7 +102,9 @@ export async function GET(req: NextRequest) {
     const filtered = (data ?? [])
       .filter((o) => !featured || o.is_featured)
       .filter(
-        (o) => !cat || normalize(o.category?.slug || '') === cat
+        (o) =>
+          !cat ||
+          normalize(o.category?.slug || '') === cat
       )
       .filter((o) => {
         if (!q) return true
@@ -104,7 +116,9 @@ export async function GET(req: NextRequest) {
         return haystack.includes(q)
       })
 
-    const offers = isPaginated ? filtered : filtered.slice(0, 100)
+    const offers = isPaginated
+      ? filtered
+      : filtered.slice(0, 100)
 
     return NextResponse.json({
       offers: offers.map((o) => {
@@ -112,6 +126,7 @@ export async function GET(req: NextRequest) {
 
         return {
           id: o.id,
+          slug: offerSlug(o),
           title: o.title,
           description: o.description,
           imageUrl: imageUrls[0] ?? '',
@@ -128,7 +143,9 @@ export async function GET(req: NextRequest) {
       }),
       page,
       limit,
-      hasMore: isPaginated && filtered.length === limit,
+      hasMore:
+        isPaginated &&
+        filtered.length === limit,
     })
   } catch (error) {
     return NextResponse.json(

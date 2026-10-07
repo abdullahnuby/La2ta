@@ -40,7 +40,8 @@ export default function OfferDetailsView({
   onOpenOffer: (id: number) => void
 }) {
   const { data, isLoading, error } = useOffer(id)
-  const [selectedImage, setSelectedImage] = useState(0)
+  const [selectedImage, setSelectedImage] =
+    useState(0)
 
   useEffect(() => {
     if (data?.offer) {
@@ -79,6 +80,7 @@ export default function OfferDetailsView({
 
   const offer = data.offer
   const store = offer.store
+
   const images =
     offer.imageUrls?.length > 0
       ? offer.imageUrls
@@ -86,10 +88,11 @@ export default function OfferDetailsView({
         ? [offer.imageUrl]
         : []
 
-  const activeImageIndex = Math.min(
-    selectedImage,
-    Math.max(images.length - 1, 0)
-  )
+  const activeImageIndex =
+    Math.min(
+      selectedImage,
+      Math.max(images.length - 1, 0)
+    )
 
   const map = mapsLink(
     store?.latitude,
@@ -102,21 +105,30 @@ export default function OfferDetailsView({
     : null
 
   const wa = store
-    ? waLink(store.whatsapp || store.phone)
+    ? waLink(
+        store.whatsapp ||
+          store.phone
+      )
     : null
 
   const saved =
     offer.oldPrice != null &&
     offer.newPrice != null &&
-    offer.oldPrice > offer.newPrice
-      ? offer.oldPrice - offer.newPrice
+    offer.oldPrice >
+      offer.newPrice
+      ? offer.oldPrice -
+        offer.newPrice
       : null
 
   const share = async () => {
+    const slug =
+      offer.slug?.trim() ||
+      `offer-${offer.id}`
+
     const url =
       typeof window !== 'undefined'
-        ? `${window.location.origin}/o/${id}`
-        : `/o/${id}`
+        ? `${window.location.origin}/offer/${encodeURIComponent(slug)}`
+        : `/offer/${encodeURIComponent(slug)}`
 
     track(id, 'share')
 
@@ -150,9 +162,13 @@ export default function OfferDetailsView({
       await navigator.clipboard.writeText(
         `${text}\n${url}`
       )
-      toast.success('تم نسخ رابط العرض 🔗')
+      toast.success(
+        'تم نسخ رابط العرض 🔗'
+      )
     } catch {
-      toast.error('مش قادرين ننسخ الرابط')
+      toast.error(
+        'مش قادرين ننسخ الرابط'
+      )
     }
   }
 
@@ -170,7 +186,8 @@ export default function OfferDetailsView({
     if (images.length <= 1) return
 
     setSelectedImage(
-      activeImageIndex === images.length - 1
+      activeImageIndex ===
+        images.length - 1
         ? 0
         : activeImageIndex + 1
     )
@@ -181,7 +198,11 @@ export default function OfferDetailsView({
       <div className="relative aspect-[4/3] w-full bg-muted">
         {images.length > 0 ? (
           <Image
-            src={images[activeImageIndex]}
+            src={
+              images[
+                activeImageIndex
+              ]
+            }
             alt={offer.title}
             fill
             sizes="(max-width: 480px) 100vw, 480px"
@@ -251,28 +272,35 @@ export default function OfferDetailsView({
       {images.length > 1 && (
         <div className="overflow-x-auto px-3 pt-3 scrollbar-hide">
           <div className="flex gap-2">
-            {images.map((image, index) => (
-              <button
-                key={`${image}-${index}`}
-                type="button"
-                onClick={() => setSelectedImage(index)}
-                className={`relative size-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                  activeImageIndex === index
-                    ? 'border-primary shadow-md'
-                    : 'border-transparent opacity-70'
-                }`}
-                aria-label={`عرض الصورة ${index + 1}`}
-              >
-                <Image
-                  src={image}
-                  alt=""
-                  fill
-                  sizes="64px"
-                  className="object-cover"
-                  unoptimized
-                />
-              </button>
-            ))}
+            {images.map(
+              (image, index) => (
+                <button
+                  key={`${image}-${index}`}
+                  type="button"
+                  onClick={() =>
+                    setSelectedImage(
+                      index
+                    )
+                  }
+                  className={`relative size-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                    activeImageIndex ===
+                    index
+                      ? 'border-primary shadow-md'
+                      : 'border-transparent opacity-70'
+                  }`}
+                  aria-label={`عرض الصورة ${index + 1}`}
+                >
+                  <Image
+                    src={image}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                </button>
+              )
+            )}
           </div>
         </div>
       )}
@@ -298,19 +326,24 @@ export default function OfferDetailsView({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl bg-accent p-4">
             {offer.newPrice != null && (
               <span className="text-3xl font-black tracking-tight text-primary">
-                {formatPrice(offer.newPrice)}
+                {formatPrice(
+                  offer.newPrice
+                )}
               </span>
             )}
 
             {offer.oldPrice != null && (
               <span className="text-lg font-bold text-muted-foreground line-through">
-                {formatPrice(offer.oldPrice)}
+                {formatPrice(
+                  offer.oldPrice
+                )}
               </span>
             )}
 
             {saved != null && (
               <Badge className="rounded-full bg-primary px-2.5 py-1 text-xs font-black text-primary-foreground hover:bg-primary">
-                وفّرت {formatPrice(saved)}
+                وفّرت{' '}
+                {formatPrice(saved)}
               </Badge>
             )}
           </div>
@@ -320,9 +353,14 @@ export default function OfferDetailsView({
               className="size-4.5 shrink-0 text-primary"
               aria-hidden
             />
-            العرض متاح حتى {formatDate(offer.endAt)}
+            العرض متاح حتى{' '}
+            {formatDate(
+              offer.endAt
+            )}
             <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-black text-primary-foreground">
-              {remainingText(offer.endAt)}
+              {remainingText(
+                offer.endAt
+              )}
             </span>
           </div>
 
@@ -372,9 +410,13 @@ export default function OfferDetailsView({
           </p>
 
           <RelatedOffers
-            categorySlug={offer.category?.slug}
+            categorySlug={
+              offer.category?.slug
+            }
             excludeId={id}
-            onOpenOffer={onOpenOffer}
+            onOpenOffer={
+              onOpenOffer
+            }
           />
         </div>
       </div>
@@ -441,15 +483,24 @@ function RelatedOffers({
   onOpenOffer: (id: number) => void
 }) {
   const { data } = useOffers(
-    categorySlug ? { cat: categorySlug } : {},
+    categorySlug
+      ? { cat: categorySlug }
+      : {},
     !!categorySlug
   )
 
   const related = (data?.offers ?? [])
-    .filter((o) => o.id !== excludeId)
+    .filter(
+      (o) => o.id !== excludeId
+    )
     .slice(0, 6)
 
-  if (!categorySlug || related.length === 0) return null
+  if (
+    !categorySlug ||
+    related.length === 0
+  ) {
+    return null
+  }
 
   return (
     <section
