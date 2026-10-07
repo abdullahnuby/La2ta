@@ -1,6 +1,11 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { adminApi, api, useAdminStore } from '@/lib/api-client'
 import type {
   AdminCategory,
@@ -32,6 +37,13 @@ export interface OffersParams {
   cat?: string
 }
 
+export interface OffersPage {
+  offers: PublicOffer[]
+  page: number
+  limit: number
+  hasMore: boolean
+}
+
 export function useOffers(params: OffersParams = {}, enabled = true) {
   return useQuery({
     queryKey: ['offers', params],
@@ -40,8 +52,38 @@ export function useOffers(params: OffersParams = {}, enabled = true) {
       if (params.q) search.set('q', params.q)
       if (params.cat) search.set('cat', params.cat)
       const qs = search.toString()
-      return api<{ offers: PublicOffer[] }>(`/api/offers${qs ? `?${qs}` : ''}`)
+      return api<{ offers: PublicOffer[] }>(
+        `/api/offers${qs ? `?${qs}` : ''}`
+      )
     },
+    staleTime: 30_000,
+    enabled,
+  })
+}
+
+/**
+ * Public infinite feed.
+ * Loads the homepage offers in small pages as the user reaches the end
+ * of the current list.
+ */
+export function useInfiniteOffers(
+  params: OffersParams = {},
+  enabled = true
+) {
+  return useInfiniteQuery({
+    queryKey: ['offers', 'infinite', params],
+    queryFn: ({ pageParam = 1 }) => {
+      const search = new URLSearchParams()
+      if (params.q) search.set('q', params.q)
+      if (params.cat) search.set('cat', params.cat)
+      search.set('page', String(pageParam))
+      search.set('limit', '12')
+
+      return api<OffersPage>(`/api/offers?${search.toString()}`)
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
     staleTime: 30_000,
     enabled,
   })
@@ -78,7 +120,8 @@ export function useAdminOffers() {
   const token = useAdmin()
   return useQuery({
     queryKey: ['admin', 'offers'],
-    queryFn: () => adminApi<{ offers: AdminOffer[] }>('/api/admin/offers', token),
+    queryFn: () =>
+      adminApi<{ offers: AdminOffer[] }>('/api/admin/offers', token),
     enabled: !!token,
   })
 }
@@ -87,7 +130,8 @@ export function useAdminStores() {
   const token = useAdmin()
   return useQuery({
     queryKey: ['admin', 'stores'],
-    queryFn: () => adminApi<{ stores: AdminStore[] }>('/api/admin/stores', token),
+    queryFn: () =>
+      adminApi<{ stores: AdminStore[] }>('/api/admin/stores', token),
     enabled: !!token,
   })
 }
@@ -97,7 +141,10 @@ export function useAdminCategories() {
   return useQuery({
     queryKey: ['admin', 'categories'],
     queryFn: () =>
-      adminApi<{ categories: AdminCategory[] }>('/api/admin/categories', token),
+      adminApi<{ categories: AdminCategory[] }>(
+        '/api/admin/categories',
+        token
+      ),
     enabled: !!token,
   })
 }
@@ -186,7 +233,12 @@ export function useUpdateStore() {
   const token = useAdmin()
   const invalidate = useInvalidate()
   return useMutation({
-    mutationFn: async ({ id, ...body }: { id: number } & Partial<StoreInput>) =>
+    mutationFn: async ({
+      id,
+      ...body
+    }: {
+      id: number
+    } & Partial<StoreInput>) =>
       adminApi<{ store: AdminStore }>(`/api/admin/stores/${id}`, token, {
         method: 'PATCH',
         body: JSON.stringify(body),
@@ -203,7 +255,8 @@ export function useDeleteStore() {
       adminApi<{ ok: boolean }>(`/api/admin/stores/${id}`, token, {
         method: 'DELETE',
       }),
-    onSuccess: () => invalidate(['admin', 'stores', 'offers', 'stats', 'admin']),
+    onSuccess: () =>
+      invalidate(['admin', 'stores', 'offers', 'stats', 'admin']),
   })
 }
 
@@ -223,12 +276,17 @@ export function useSaveCategory() {
             token,
             { method: 'PATCH', body: JSON.stringify(body) }
           )
-        : adminApi<{ category: AdminCategory }>('/api/admin/categories', token, {
-            method: 'POST',
-            body: JSON.stringify(body),
-          })
+        : adminApi<{ category: AdminCategory }>(
+            '/api/admin/categories',
+            token,
+            {
+              method: 'POST',
+              body: JSON.stringify(body),
+            }
+          )
     },
-    onSuccess: () => invalidate(['admin', 'categories', 'categories', 'admin']),
+    onSuccess: () =>
+      invalidate(['admin', 'categories', 'categories', 'admin']),
   })
 }
 
@@ -241,7 +299,13 @@ export function useDeleteCategory() {
         method: 'DELETE',
       }),
     onSuccess: () =>
-      invalidate(['admin', 'categories', 'categories', 'offers', 'admin']),
+      invalidate([
+        'admin',
+        'categories',
+        'categories',
+        'offers',
+        'admin',
+      ]),
   })
 }
 
