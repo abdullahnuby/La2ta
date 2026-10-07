@@ -15,12 +15,18 @@ export const metadata: Metadata = {
   description:
     "لقط أحسن عرض في الأقصر — اكتشف عروض وخصومات المحلات الحقيقية قبل ما تنزل تشتري. عروض محدودة المدة من الملابس والمطاعم والإلكترونيات وأكتر.",
   keywords: ["لقطة", "LA2TA", "عروض", "خصومات", "الأقصر", "عروض الأقصر", "تخفيضات"],
-  applicationName: "LA2TA",
+  applicationName: "لقطة",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
   openGraph: {
     title: "لقطة 🔥 — أقوى العروض في الأقصر",
     description: "اكتشف العروض قبل ما تنزل تشتري — عروض حقيقية محدودة المدة في الأقصر",
     type: "website",
     locale: "ar_EG",
+    images: ["/la2ta-logo.png"],
   },
 };
 

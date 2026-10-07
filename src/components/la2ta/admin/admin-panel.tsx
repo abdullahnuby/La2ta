@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { LayoutDashboard, LogOut, ExternalLink } from 'lucide-react'
+import { LogOut, ExternalLink } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import AdminLogin from '@/components/la2ta/admin/admin-login'
@@ -9,6 +9,7 @@ import OverviewTab from '@/components/la2ta/admin/overview-tab'
 import OffersTab from '@/components/la2ta/admin/offers-tab'
 import StoresTab from '@/components/la2ta/admin/stores-tab'
 import CategoriesTab from '@/components/la2ta/admin/categories-tab'
+import BrandLogo from '@/components/la2ta/brand-logo'
 import { useAdminStore } from '@/lib/api-client'
 
 export default function AdminPanel() {
@@ -31,12 +32,13 @@ export default function AdminPanel() {
   return (
     <div className="container mx-auto max-w-6xl space-y-6 px-4 py-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="flex items-center gap-2.5 text-2xl font-black text-foreground">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <LayoutDashboard className="size-5.5" />
-          </span>
-          لوحة تحكم لقطة
-        </h1>
+        <div className="flex items-center gap-3">
+          <BrandLogo size="sm" />
+          <div>
+            <h1 className="text-2xl font-black text-foreground">لوحة تحكم لقطة</h1>
+            <p className="text-xs font-bold text-muted-foreground">عروضك أقرب لك</p>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" className="rounded-xl font-bold">
             <a href="#/">

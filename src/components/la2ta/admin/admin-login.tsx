@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Flame, Loader2, Lock } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import BrandLogo from '@/components/la2ta/brand-logo'
 import { useAdminStore } from '@/lib/api-client'
 
 export default function AdminLogin() {
@@ -39,9 +40,7 @@ export default function AdminLogin() {
     <div className="container mx-auto flex max-w-md flex-col items-center px-4 py-14">
       <Card className="w-full rounded-3xl border shadow-lg">
         <CardHeader className="items-center space-y-2 text-center">
-          <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-md shadow-primary/30">
-            <Flame className="size-7" strokeWidth={2.5} />
-          </span>
+          <BrandLogo size="lg" priority />
           <CardTitle className="text-2xl font-black">لوحة تحكم لقطة</CardTitle>
           <p className="text-sm font-medium text-muted-foreground">
             ادخل كلمة المرور لإدارة العروض والمحلات والتصنيفات
