@@ -82,8 +82,21 @@ export default function HomeView({
   const results =
     filteredData?.offers ?? []
 
+  const selectedCategoryName = useMemo(() => {
+    if (!category) return null
+
+    const selected = (
+      categoriesData?.categories ?? []
+    ).find((item) => item.slug === category)
+
+    return selected
+      ? `${selected.icon ? `${selected.icon} ` : ''}${selected.name}`
+      : category
+  }, [category, categoriesData])
+
   useEffect(() => {
     const sentinel = loadMoreRef.current
+
     if (
       !sentinel ||
       isFiltering ||
@@ -122,6 +135,11 @@ export default function HomeView({
     setQuery('')
     setCategory(null)
   }
+
+  const emptyFilterLabel =
+    debounced ||
+    selectedCategoryName ||
+    'الاختيار الحالي'
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-7 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
@@ -168,6 +186,7 @@ export default function HomeView({
                 {results.length}
               </span>
             </h2>
+
             <Button
               variant="ghost"
               size="sm"
@@ -193,8 +212,8 @@ export default function HomeView({
           ) : results.length === 0 ? (
             <EmptyState
               icon="🔍"
-              title="مفيش لقطات على بحثك"
-              subtitle={`مفيش عروض حاليًا على «${debounced || category}» — جرّب كلمة تانية أو شوف كل العروض.`}
+              title="مفيش لقطات على اختيارك"
+              subtitle={`مفيش عروض حاليًا على «${emptyFilterLabel}» — جرّب كلمة تانية أو شوف كل العروض.`}
               actionLabel="شوف كل العروض"
               onAction={clearFilters}
             />
@@ -268,6 +287,7 @@ export default function HomeView({
                 <Sparkles className="size-4.5 text-primary" />
                 أحدث العروض
               </h2>
+
               <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
                 {allOffers.length}
               </span>
