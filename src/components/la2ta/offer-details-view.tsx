@@ -30,6 +30,7 @@ import {
   waLink,
 } from '@/lib/format'
 import { useOffer, useOffers } from '@/hooks/use-la2ta-api'
+import { storePath } from '@/lib/store-slug'
 
 export default function OfferDetailsView({
   id,
@@ -346,17 +347,21 @@ export default function OfferDetailsView({
                 aria-label="بيانات المحل"
                 className="space-y-3.5 rounded-2xl border border-primary/20 bg-secondary/45 p-4"
               >
-                <div className="flex items-center gap-2.5">
+                <a
+                  href={`/store/${storePath(store.id, store.name)}`}
+                  className="flex items-center gap-2.5 rounded-xl p-1.5 -m-1.5 transition-colors hover:bg-background/70"
+                  aria-label={`شوف عروض ${store.name}`}
+                >
                   <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
                     <StoreIcon className="size-5" />
                   </span>
                   <div className="leading-tight">
                     <p className="text-base font-black text-foreground">{store.name}</p>
                     <p className="mt-0.5 text-[11px] font-bold text-muted-foreground">
-                      العرض متاح عند المحل
+                      شوف كل عروض المحل
                     </p>
                   </div>
-                </div>
+                </a>
 
                 {store.description && (
                   <p className="text-sm font-medium leading-6 text-muted-foreground">
