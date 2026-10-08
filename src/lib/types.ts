@@ -70,6 +70,10 @@ export interface StoreInfo {
   longitude: number | null
 }
 
+export interface PublicStore extends StoreInfo {
+  offersCount: number
+}
+
 export interface OfferDetails extends PublicOffer {
   views: number
   store: StoreInfo | null
