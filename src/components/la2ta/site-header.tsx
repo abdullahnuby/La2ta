@@ -30,8 +30,8 @@ function ThemeToggle() {
 
 export default function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
-      <div className="flex h-16 items-center justify-between gap-3 px-4">
+    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <a
           href="/"
           className="flex min-w-0 items-center gap-2.5 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
@@ -39,10 +39,10 @@ export default function SiteHeader() {
         >
           <BrandLogo size="sm" priority />
           <span className="min-w-0 leading-none">
-            <span className="block truncate text-xl font-black tracking-tight text-foreground">
+            <span className="block truncate text-xl font-black tracking-tight text-foreground sm:text-2xl">
               لقطة
             </span>
-            <span className="mt-1 block truncate text-[10px] font-bold text-muted-foreground">
+            <span className="mt-1 block truncate text-[10px] font-bold text-muted-foreground sm:text-xs">
               عروضك أقرب لك
             </span>
           </span>
