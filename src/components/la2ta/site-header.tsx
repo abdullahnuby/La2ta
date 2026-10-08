@@ -17,9 +17,7 @@ function ThemeToggle() {
       size="icon"
       className="size-9 rounded-xl border-input bg-card shadow-sm"
       aria-label="تبديل الوضع الليلي"
-      onClick={() =>
-        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-      }
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
     >
       <Sun className="hidden size-4 dark:block" />
       <Moon className="size-4 dark:hidden" />
@@ -55,28 +53,19 @@ export default function SiteHeader() {
           aria-label="التنقل الرئيسي"
           className="hidden items-center gap-1 rounded-2xl border border-border/70 bg-card/70 p-1 shadow-sm md:flex"
         >
-          <a
-            href="/#/"
-            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
-          >
+          <a href="/#/" className="rounded-xl px-3.5 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary">
             الرئيسية
           </a>
-          <a
-            href="/#/offers"
-            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
-          >
+          <a href="/#/offers" className="rounded-xl px-3.5 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary">
             كل العروض
           </a>
-          <a
-            href="/#categories"
-            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
-          >
+          <a href="/stores" className="rounded-xl px-3.5 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary">
+            المحلات
+          </a>
+          <a href="/#categories" className="rounded-xl px-3.5 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary">
             الأقسام
           </a>
-          <a
-            href="/#latest-offers"
-            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
-          >
+          <a href="/#latest-offers" className="rounded-xl px-3.5 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary">
             أحدث العروض
           </a>
         </nav>
@@ -112,9 +101,7 @@ export default function SiteHeader() {
             aria-label={user ? 'حسابي' : 'تسجيل الدخول'}
           >
             <UserRound className="size-4" />
-            <span className="hidden sm:inline">
-              {user ? 'حسابي' : 'دخول'}
-            </span>
+            <span className="hidden sm:inline">{user ? 'حسابي' : 'دخول'}</span>
           </a>
           <ThemeToggle />
         </div>
