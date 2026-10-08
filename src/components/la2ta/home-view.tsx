@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Flame, Loader2, Sparkles, XCircle } from 'lucide-react'
+import { Loader2, Sparkles, XCircle } from 'lucide-react'
 import SearchBar from '@/components/la2ta/search-bar'
 import CategoryChips from '@/components/la2ta/category-chips'
 import DealsHero from '@/components/la2ta/deals-hero'
+import FeaturedOfferAd from '@/components/la2ta/featured-offer-ad'
 import { OfferCard } from '@/components/la2ta/offer-card'
 import EmptyState from '@/components/la2ta/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -191,51 +192,7 @@ export default function HomeView({
       ) : (
         <>
           {mode === 'home' && featured.length > 0 && (
-            <section aria-label="العروض المميزة" className="mt-8 space-y-4">
-              <div className="flex items-end justify-between gap-3">
-                <div>
-                  <p className="text-xs font-black text-primary">متختارة بعناية</p>
-                  <h2 className="mt-0.5 flex items-center gap-1.5 text-lg font-black text-foreground sm:text-xl">
-                    <Flame className="size-5 text-primary" strokeWidth={2.5} />
-                    العروض المميزة
-                  </h2>
-                </div>
-                <a
-                  href="/#/offers"
-                  className="rounded-full bg-primary/10 px-3 py-1.5 text-[11px] font-black text-primary transition-colors hover:bg-primary/15"
-                >
-                  كل العروض
-                </a>
-              </div>
-
-              <div className="relative overflow-hidden rounded-[1.5rem] border border-border/70 bg-card/70 py-3 shadow-sm">
-                <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-10 bg-gradient-to-r from-card to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-10 bg-gradient-to-l from-card to-transparent" />
-                <div
-                  className="la2ta-featured-track flex w-max gap-3 px-3 py-1"
-                  style={{ direction: 'ltr' }}
-                >
-                  {[0, 1].map((copy) => (
-                    <div
-                      key={copy}
-                      className="flex gap-3"
-                      aria-hidden={copy === 1}
-                    >
-                      {featured.map((offer, index) => (
-                        <OfferCard
-                          key={`${copy}-${offer.id}`}
-                          offer={offer}
-                          onOpen={onOpenOffer}
-                          compact
-                          priority={index === 0 && copy === 0}
-                          className="w-[215px] shrink-0 sm:w-[245px]"
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+            <FeaturedOfferAd offers={featured} />
           )}
 
           <section
