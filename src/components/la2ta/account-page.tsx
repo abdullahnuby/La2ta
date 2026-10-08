@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import {
+  BellRing,
   CheckCircle2,
   Heart,
   LogIn,
@@ -164,6 +165,19 @@ export default function AccountPage() {
               </span>
               <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
                 {favoriteOffers.length}
+              </span>
+            </a>
+
+            <a
+              href="/notifications"
+              className="mb-3 flex items-center justify-between rounded-2xl border bg-background px-4 py-3 transition hover:border-primary/30 hover:bg-accent"
+            >
+              <span className="flex items-center gap-2 text-sm font-black text-foreground">
+                <BellRing className="size-4 text-primary" />
+                تنبيهات العروض
+              </span>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
+                افتح
               </span>
             </a>
 

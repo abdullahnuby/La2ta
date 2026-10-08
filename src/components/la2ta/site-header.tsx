@@ -1,11 +1,12 @@
 'use client'
 
 import { useTheme } from 'next-themes'
-import { Heart, Moon, Sun, UserRound } from 'lucide-react'
+import { BellRing, Heart, Moon, Sun, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import BrandLogo from '@/components/la2ta/brand-logo'
 import { useAuth } from '@/components/la2ta/auth-provider'
 import { useFavorites } from '@/components/la2ta/favorites-provider'
+import { useNotifications } from '@/components/la2ta/notifications-provider'
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -29,6 +30,7 @@ function ThemeToggle() {
 export default function SiteHeader() {
   const { user } = useAuth()
   const { favoriteOfferIds } = useFavorites()
+  const { unreadCount } = useNotifications()
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.3)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
@@ -80,6 +82,18 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <a
+            href="/notifications"
+            className="relative inline-flex size-9 items-center justify-center rounded-xl border border-input bg-card text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-accent sm:size-10"
+            aria-label="تنبيهات العروض"
+          >
+            <BellRing className="size-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -end-1 -top-1 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-black leading-4 text-primary-foreground shadow-sm">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </a>
           <a
             href="/favorites"
             className="relative inline-flex size-9 items-center justify-center rounded-xl border border-input bg-card text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-accent sm:size-10"

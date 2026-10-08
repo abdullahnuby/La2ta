@@ -29,11 +29,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const configured = isSupabaseAuthConfigured()
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(configured)
@@ -93,10 +89,7 @@ export function AuthProvider({
         })
 
         if (error) throw error
-
-        return {
-          needsEmailConfirmation: !data.session,
-        }
+        return { needsEmailConfirmation: !data.session }
       },
       signOut: async () => {
         const supabase = getSupabaseBrowserClient()
@@ -107,17 +100,11 @@ export function AuthProvider({
     [configured, loading, session]
   )
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const value = useContext(AuthContext)
-  if (!value) {
-    throw new Error('useAuth must be used inside AuthProvider')
-  }
+  if (!value) throw new Error('useAuth must be used inside AuthProvider')
   return value
 }

@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 import { AuthProvider } from '@/components/la2ta/auth-provider'
 import { FavoritesProvider } from '@/components/la2ta/favorites-provider'
+import { NotificationsProvider } from '@/components/la2ta/notifications-provider'
 import './globals.css'
 
 const cairo = Cairo({
@@ -41,10 +42,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`${cairo.variable} font-sans antialiased bg-background text-foreground`}>
         <AuthProvider>
           <FavoritesProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <NotificationsProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
               {children}
-              <Toaster richColors position="top-center" />
-            </ThemeProvider>
+                <Toaster richColors position="top-center" />
+              </ThemeProvider>
+            </NotificationsProvider>
           </FavoritesProvider>
         </AuthProvider>
       </body>
