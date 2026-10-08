@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Loader2, Sparkles, XCircle } from 'lucide-react'
 import SearchBar from '@/components/la2ta/search-bar'
 import CategoryChips from '@/components/la2ta/category-chips'
 import DealsHero from '@/components/la2ta/deals-hero'
-import FeaturedOfferAd from '@/components/la2ta/featured-offer-ad'
+import FeaturedNativeAd from '@/components/la2ta/featured-native-ad'
 import { OfferCard } from '@/components/la2ta/offer-card'
 import EmptyState from '@/components/la2ta/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -14,6 +14,8 @@ import { useCategories, useInfiniteOffers, useOffers } from '@/hooks/use-la2ta-a
 
 const grid =
   'grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+
+const FEATURED_AD_EVERY = 8
 
 export default function HomeView({
   onOpenOffer,
@@ -190,68 +192,70 @@ export default function HomeView({
           )}
         </section>
       ) : (
-        <>
-          {mode === 'home' && featured.length > 0 && (
-            <FeaturedOfferAd offers={featured} />
-          )}
-
-          <section
-            id="latest-offers"
-            aria-label="أحدث العروض"
-            className="mt-9 scroll-mt-24 space-y-4"
-          >
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <p className="text-xs font-black text-primary">متجدد باستمرار</p>
-                <h2 className="flex items-center gap-1.5 text-lg font-black text-foreground sm:text-xl">
-                  <Sparkles className="size-4.5 text-primary" />
-                  أحدث العروض
-                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
-                    {allOffers.length}
-                  </span>
-                </h2>
-              </div>
-              <span className="hidden rounded-full bg-muted px-3 py-1 text-[11px] font-black text-muted-foreground sm:inline-flex">
-                عروض جديدة كل فترة 🔥
-              </span>
+        <section
+          id="latest-offers"
+          aria-label="أحدث العروض"
+          className="mt-9 scroll-mt-24 space-y-4"
+        >
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-black text-primary">متجدد باستمرار</p>
+              <h2 className="flex items-center gap-1.5 text-lg font-black text-foreground sm:text-xl">
+                <Sparkles className="size-4.5 text-primary" />
+                أحدث العروض
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
+                  {allOffers.length}
+                </span>
+              </h2>
             </div>
+            <span className="hidden rounded-full bg-muted px-3 py-1 text-[11px] font-black text-muted-foreground sm:inline-flex">
+              عروض جديدة كل فترة 🔥
+            </span>
+          </div>
 
-            {feedLoading ? (
+          {feedLoading ? (
+            <div className={grid}>
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-[4/5] rounded-2xl" />
+              ))}
+            </div>
+          ) : allOffers.length === 0 ? (
+            <EmptyState
+              icon="🔥"
+              title="لسه مفيش عروض"
+              subtitle="العروض جاية قريب — احنا بنجمع لك أقوى عروض الأقصر في مكان واحد."
+            />
+          ) : (
+            <>
               <div className={grid}>
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <Skeleton key={i} className="aspect-[4/5] rounded-2xl" />
+                {allOffers.map((offer, index) => (
+                  <Fragment key={offer.id}>
+                    <OfferCard offer={offer} onOpen={onOpenOffer} />
+                    {mode === 'home' &&
+                      featured.length > 0 &&
+                      (index + 1) % FEATURED_AD_EVERY === 0 && (
+                        <FeaturedNativeAd offers={featured} />
+                      )}
+                  </Fragment>
                 ))}
               </div>
-            ) : allOffers.length === 0 ? (
-              <EmptyState
-                icon="🔥"
-                title="لسه مفيش عروض"
-                subtitle="العروض جاية قريب — احنا بنجمع لك أقوى عروض الأقصر في مكان واحد."
-              />
-            ) : (
-              <>
-                <div className={grid}>
-                  {allOffers.map((offer) => (
-                    <OfferCard key={offer.id} offer={offer} onOpen={onOpenOffer} />
-                  ))}
-                </div>
-                <div ref={loadMoreRef} aria-hidden="true" className="flex min-h-16 items-center justify-center pt-3">
-                  {isFetchingNextPage && (
-                    <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                      <Loader2 className="size-4 animate-spin text-primary" />
-                      بنجيب عروض جديدة...
-                    </div>
-                  )}
-                </div>
-                {!hasNextPage && allOffers.length > 0 && (
-                  <p className="pt-1 text-center text-xs font-semibold text-muted-foreground">
-                    خلصت كل العروض المتاحة 🔥
-                  </p>
+
+              <div ref={loadMoreRef} aria-hidden="true" className="flex min-h-16 items-center justify-center pt-3">
+                {isFetchingNextPage && (
+                  <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin text-primary" />
+                    بنجيب عروض جديدة...
+                  </div>
                 )}
-              </>
-            )}
-          </section>
-        </>
+              </div>
+              {!hasNextPage && allOffers.length > 0 && (
+                <p className="pt-1 text-center text-xs font-semibold text-muted-foreground">
+                  خلصت كل العروض المتاحة 🔥
+                </p>
+              )}
+            </>
+          )}
+        </section>
       )}
 
       <section className="mt-10 overflow-hidden rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,#fff7ed_0%,#ffedd5_70%,#fff_100%)] px-5 py-5 shadow-sm sm:flex sm:items-center sm:justify-between sm:gap-5 sm:px-7">
