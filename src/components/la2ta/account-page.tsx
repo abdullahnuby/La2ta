@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import {
   CheckCircle2,
+  Heart,
   LogIn,
   LogOut,
   Mail,
@@ -16,6 +17,7 @@ import BrandLogo from '@/components/la2ta/brand-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/components/la2ta/auth-provider'
+import { useFavorites } from '@/components/la2ta/favorites-provider'
 
 function friendlyAuthError(error: unknown) {
   const message = error instanceof Error ? error.message.toLowerCase() : ''
@@ -41,6 +43,7 @@ function friendlyAuthError(error: unknown) {
 
 export default function AccountPage() {
   const { user, loading, configured, signIn, signUp, signOut } = useAuth()
+  const { favoriteOffers } = useFavorites()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -151,6 +154,19 @@ export default function AccountPage() {
           </div>
 
           <div className="border-t p-5 sm:p-8">
+            <a
+              href="/favorites"
+              className="mb-3 flex items-center justify-between rounded-2xl border bg-background px-4 py-3 transition hover:border-primary/30 hover:bg-accent"
+            >
+              <span className="flex items-center gap-2 text-sm font-black text-foreground">
+                <Heart className="size-4 text-primary" />
+                العروض المفضلة
+              </span>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
+                {favoriteOffers.length}
+              </span>
+            </a>
+
             <Button
               type="button"
               variant="outline"

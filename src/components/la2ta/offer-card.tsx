@@ -3,8 +3,11 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Hourglass, Flame } from 'lucide-react'
+import { Flame, Heart, Hourglass } from 'lucide-react'
 import { track } from '@/lib/api-client'
+import { useAuth } from '@/components/la2ta/auth-provider'
+import { useFavorites } from '@/components/la2ta/favorites-provider'
+import { toast } from 'sonner'
 import {
   daysLeft,
   formatPrice,
@@ -49,6 +52,9 @@ export function OfferCard({
   className?: string
 }) {
   const ref = useImpression(offer.id)
+  const { user } = useAuth()
+  const { isFavorite, toggleFavorite } = useFavorites()
+  const favorite = isFavorite(offer.id)
   const urgent = daysLeft(offer.endAt) <= 1
 
   const imageAspect = compact
@@ -64,6 +70,28 @@ export function OfferCard({
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className={`group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 ${className}`}
     >
+      <button
+        type="button"
+        onClick={async () => {
+          if (!user) {
+            toast.info('سجل دخولك علشان تحفظ العرض في المفضلة ❤️')
+            return
+          }
+          try {
+            await toggleFavorite(offer.id)
+          } catch (error) {
+            if (error instanceof Error && error.message !== 'AUTH_REQUIRED') {
+              toast.error(error.message)
+            }
+          }
+        }}
+        aria-label={favorite ? 'إزالة العرض من المفضلة' : 'حفظ العرض في المفضلة'}
+        aria-pressed={favorite}
+        className={`absolute end-2 top-2 z-20 grid size-9 place-items-center rounded-full border border-white/70 bg-white/92 text-primary shadow-lg backdrop-blur transition-transform hover:scale-105 active:scale-90 ${favorite ? 'text-primary' : 'text-slate-500'}`}
+      >
+        <Heart className={`size-4.5 ${favorite ? 'fill-current' : ''}`} />
+      </button>
+
       <a
         href={`/offer/${encodeURIComponent(offer.slug || `offer-${offer.id}`)}`}
         onClick={() => {
