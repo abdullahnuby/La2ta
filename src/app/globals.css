@@ -44,7 +44,6 @@
   --radius-2xl: calc(var(--radius) + 10px);
 }
 
-/* LA2TA — warm "hot deals" palette (no blue/indigo) */
 :root {
   --radius: 0.875rem;
   --background: oklch(0.994 0.005 85);
@@ -122,7 +121,6 @@
   }
   html {
     scroll-behavior: smooth;
-    /* native-app feel: no gray flash on tap */
     -webkit-tap-highlight-color: transparent;
   }
   body {
@@ -134,12 +132,10 @@
 }
 
 @layer utilities {
-  /* iOS safe-area bottom padding (notch / home indicator) */
   .pb-safe {
     padding-bottom: max(0.625rem, env(safe-area-inset-bottom));
   }
 
-  /* Hide scrollbars for horizontal chip rows / carousels */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -148,7 +144,6 @@
     display: none;
   }
 
-  /* Pretty slim scrollbar for long lists (admin tables etc.) */
   .nice-scroll {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in oklab, var(--primary) 45%, transparent) transparent;
@@ -166,5 +161,30 @@
   }
   .nice-scroll::-webkit-scrollbar-thumb:hover {
     background: color-mix(in oklab, var(--primary) 65%, transparent);
+  }
+}
+
+@keyframes la2ta-featured-scroll {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.la2ta-featured-track {
+  animation: la2ta-featured-scroll 32s linear infinite;
+  will-change: transform;
+}
+
+.la2ta-featured-track:hover,
+.la2ta-featured-track:focus-within {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .la2ta-featured-track {
+    animation: none;
   }
 }

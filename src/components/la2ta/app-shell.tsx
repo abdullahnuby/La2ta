@@ -30,9 +30,13 @@ export default function AppShell() {
 
         <main className="flex-1 pb-24 md:pb-0">
           <AnimatePresence mode="wait">
-            {route.name === 'home' && (
-              <motion.div key="home" {...pageMotion}>
+            {(route.name === 'home' || route.name === 'offers') && (
+              <motion.div
+                key={route.name}
+                {...pageMotion}
+              >
                 <HomeView
+                  mode={route.name}
                   onOpenOffer={(id) =>
                     navigate({ name: 'offer', id })
                   }
@@ -47,9 +51,7 @@ export default function AppShell() {
               >
                 <OfferDetailsView
                   id={route.id}
-                  onBack={() =>
-                    navigate({ name: 'home' })
-                  }
+                  onBack={() => navigate({ name: 'home' })}
                   onOpenOffer={(id) =>
                     navigate({ name: 'offer', id })
                   }
@@ -60,7 +62,9 @@ export default function AppShell() {
         </main>
 
         <SiteFooter />
-        <SiteBottomNav active={route.name === 'offer' ? 'offers' : 'home'} />
+        <SiteBottomNav
+          active={route.name === 'offers' || route.name === 'offer' ? 'offers' : 'home'}
+        />
       </div>
     </div>
   )

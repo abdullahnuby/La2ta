@@ -13,12 +13,10 @@ function ThemeToggle() {
     <Button
       variant="outline"
       size="icon"
-      className="size-9 rounded-xl border-input bg-card"
+      className="size-9 rounded-xl border-input bg-card shadow-sm"
       aria-label="تبديل الوضع الليلي"
       onClick={() =>
-        setTheme(
-          resolvedTheme === 'dark' ? 'light' : 'dark'
-        )
+        setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
       }
     >
       <Sun className="hidden size-4 dark:block" />
@@ -31,23 +29,53 @@ export default function SiteHeader() {
   const { user } = useAuth()
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 shadow-[0_8px_24px_-18px_rgba(0,0,0,0.3)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto flex h-[68px] w-full max-w-7xl items-center justify-between gap-4 px-3 sm:px-6 lg:px-8">
         <a
           href="/"
           className="flex min-w-0 items-center gap-2.5 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           aria-label="لقطة — الرئيسية"
         >
           <BrandLogo size="sm" priority />
-          <span className="min-w-0 leading-none">
-            <span className="block truncate text-xl font-black tracking-tight text-foreground sm:text-2xl">
+          <span className="hidden min-w-0 leading-none sm:block">
+            <span className="block truncate text-xl font-black tracking-tight text-foreground lg:text-2xl">
               لقطة
             </span>
-            <span className="mt-1 block truncate text-[10px] font-bold text-muted-foreground sm:text-xs">
+            <span className="mt-1 block truncate text-[10px] font-bold text-muted-foreground lg:text-xs">
               عروضك أقرب لك
             </span>
           </span>
         </a>
+
+        <nav
+          aria-label="التنقل الرئيسي"
+          className="hidden items-center gap-1 rounded-2xl border border-border/70 bg-card/70 p-1 shadow-sm md:flex"
+        >
+          <a
+            href="/#/"
+            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
+          >
+            الرئيسية
+          </a>
+          <a
+            href="/#/offers"
+            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
+          >
+            كل العروض
+          </a>
+          <a
+            href="/#categories"
+            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
+          >
+            الأقسام
+          </a>
+          <a
+            href="/#latest-offers"
+            className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
+          >
+            أحدث اللقطات
+          </a>
+        </nav>
 
         <div className="flex items-center gap-2">
           <a
