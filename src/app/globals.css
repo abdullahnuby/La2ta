@@ -174,7 +174,7 @@
 }
 
 .la2ta-featured-track {
-  animation: la2ta-featured-scroll 18s linear infinite;
+  animation: la2ta-featured-scroll 16s linear infinite;
   will-change: transform;
 }
 

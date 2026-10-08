@@ -42,7 +42,7 @@ export function OfferCard({
   className = '',
 }: {
   offer: PublicOffer
-  onOpen: (id: number) => void
+  onOpen?: (id: number) => void
   featured?: boolean
   compact?: boolean
   priority?: boolean
@@ -64,9 +64,11 @@ export function OfferCard({
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className={`group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 ${className}`}
     >
-      <button
-        type="button"
-        onClick={() => onOpen(offer.id)}
+      <a
+        href={`/offer/${encodeURIComponent(offer.slug || `offer-${offer.id}`)}`}
+        onClick={() => {
+          if (!offer.slug && onOpen) onOpen(offer.id)
+        }}
         className="flex w-full flex-1 flex-col text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label={`شوف تفاصيل عرض: ${offer.title}`}
       >
@@ -138,7 +140,7 @@ export function OfferCard({
             {remainingText(offer.endAt)}
           </p>
         </div>
-      </button>
+      </a>
     </motion.article>
   )
 }
