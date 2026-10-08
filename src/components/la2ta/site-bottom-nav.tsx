@@ -40,7 +40,7 @@ export default function SiteBottomNav({
         >
           <Percent className="size-7" strokeWidth={2.5} />
         </span>
-        <span>اللقطات</span>
+        <span>العروض</span>
       </a>
 
       <a

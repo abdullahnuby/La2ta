@@ -73,7 +73,7 @@ export default function SiteHeader() {
             href="/#latest-offers"
             className="rounded-xl px-4 py-2 text-sm font-black text-foreground transition-colors hover:bg-accent hover:text-primary"
           >
-            أحدث اللقطات
+            أحدث العروض
           </a>
         </nav>
 

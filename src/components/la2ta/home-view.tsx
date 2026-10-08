@@ -111,7 +111,7 @@ export default function HomeView({
             <div>
               <p className="text-xs font-black text-primary">أهلاً بيك في قسم العروض</p>
               <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-                كل اللقطات 🔥
+                كل العروض 🔥
               </h1>
               <p className="mt-1 text-xs font-semibold text-slate-600 sm:text-sm">
                 أحدث العروض والخصومات في الأقصر، متجددة باستمرار.
@@ -175,7 +175,7 @@ export default function HomeView({
           ) : results.length === 0 ? (
             <EmptyState
               icon="🔍"
-              title="مفيش لقطات على اختيارك"
+              title="مفيش عروض على اختيارك"
               subtitle={`مفيش عروض حاليًا على «${emptyFilterLabel}» — جرّب كلمة تانية أو شوف كل العروض.`}
               actionLabel="شوف كل العروض"
               onAction={clearFilters}
@@ -255,7 +255,7 @@ export default function HomeView({
                 </h2>
               </div>
               <span className="hidden rounded-full bg-muted px-3 py-1 text-[11px] font-black text-muted-foreground sm:inline-flex">
-                لقطات جديدة كل فترة 🔥
+                عروض جديدة كل فترة 🔥
               </span>
             </div>
 
@@ -268,7 +268,7 @@ export default function HomeView({
             ) : allOffers.length === 0 ? (
               <EmptyState
                 icon="🔥"
-                title="لسه مفيش لقطات"
+                title="لسه مفيش عروض"
                 subtitle="العروض جاية قريب — احنا بنجمع لك أقوى عروض الأقصر في مكان واحد."
               />
             ) : (
@@ -282,13 +282,13 @@ export default function HomeView({
                   {isFetchingNextPage && (
                     <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                       <Loader2 className="size-4 animate-spin text-primary" />
-                      بنجيب لقطات جديدة...
+                      بنجيب عروض جديدة...
                     </div>
                   )}
                 </div>
                 {!hasNextPage && allOffers.length > 0 && (
                   <p className="pt-1 text-center text-xs font-semibold text-muted-foreground">
-                    خلصت كل اللقطات المتاحة 🔥
+                    خلصت كل العروض المتاحة 🔥
                   </p>
                 )}
               </>
@@ -300,7 +300,7 @@ export default function HomeView({
       <section className="mt-10 overflow-hidden rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,#fff7ed_0%,#ffedd5_70%,#fff_100%)] px-5 py-5 shadow-sm sm:flex sm:items-center sm:justify-between sm:gap-5 sm:px-7">
         <div>
           <p className="text-sm font-black text-slate-950">
-            خلّي اللقطات توصلك بدل ما تدور عليها 👀
+            خلّي العروض توصلك بدل ما تدور عليها 👀
           </p>
           <p className="mt-1 text-xs font-semibold text-slate-600">
             الحساب اختياري، وهنبني عليه المفضلة والتنبيهات بعد كده.

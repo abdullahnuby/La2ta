@@ -58,7 +58,7 @@ export default function DealsHero({
               عروض وخصومات
             </div>
             <div className="text-xl font-black text-primary">
-              🔥 لقطات
+              🔥 خصومات
             </div>
           </div>
         </div>

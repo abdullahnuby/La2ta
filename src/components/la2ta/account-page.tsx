@@ -145,7 +145,7 @@ export default function AccountPage() {
                 جاهز للمرحلة الجاية
               </div>
               <p className="mt-2 text-xs font-semibold leading-6 text-muted-foreground">
-                نفس الحساب هيكون مدخل المفضلة والتنبيهات وحفظ اللقطات اللي عجبتك.
+                نفس الحساب هيكون مدخل المفضلة والتنبيهات وحفظ العروض اللي عجبتك.
               </p>
             </div>
           </div>
