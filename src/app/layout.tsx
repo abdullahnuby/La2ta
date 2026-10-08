@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
-import { ThemeProvider } from 'next-themes'
-import { Toaster } from 'sonner'
-import { AuthProvider } from '@/components/la2ta/auth-provider'
-import { FavoritesProvider } from '@/components/la2ta/favorites-provider'
-import { NotificationsProvider } from '@/components/la2ta/notifications-provider'
+import Providers from './providers'
 import './globals.css'
 
 const cairo = Cairo({
@@ -24,32 +20,31 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'لقطة 🔥 — أقوى العروض في الأقصر',
     description: 'اكتشف العروض قبل ما تنزل تشتري — عروض حقيقية محدودة المدة في الأقصر',
-    type: 'website', locale: 'ar_EG', siteName: 'لقطة',
+    type: 'website',
+    locale: 'ar_EG',
+    siteName: 'لقطة',
   },
 }
 
 export const viewport: Viewport = {
-  width: 'device-width', initialScale: 1, viewportFit: 'cover',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ea580c' },
     { media: '(prefers-color-scheme: dark)', color: '#1a1310' },
   ],
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${cairo.variable} font-sans antialiased bg-background text-foreground`}>
-        <AuthProvider>
-          <FavoritesProvider>
-            <NotificationsProvider>
-              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              {children}
-                <Toaster richColors position="top-center" />
-              </ThemeProvider>
-            </NotificationsProvider>
-          </FavoritesProvider>
-        </AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
