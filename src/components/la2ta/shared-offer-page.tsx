@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query'
 import SiteFooter from '@/components/la2ta/site-footer'
 import SiteHeader from '@/components/la2ta/site-header'
+import SiteBottomNav from '@/components/la2ta/site-bottom-nav'
 import OfferDetailsView from '@/components/la2ta/offer-details-view'
 
 export default function SharedOfferPageClient({
@@ -23,7 +24,7 @@ export default function SharedOfferPageClient({
       <div className="min-h-dvh bg-background">
         <SiteHeader />
 
-        <main className="flex-1">
+        <main className="flex-1 pb-24 md:pb-0">
           <OfferDetailsView
             id={id}
             onBack={() => {
@@ -36,6 +37,7 @@ export default function SharedOfferPageClient({
         </main>
 
         <SiteFooter />
+        <SiteBottomNav active="offers" />
       </div>
     </QueryClientProvider>
   )

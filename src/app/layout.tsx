@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
+import { AuthProvider } from '@/components/la2ta/auth-provider'
 import './globals.css'
 
 const cairo = Cairo({
@@ -65,18 +66,17 @@ export default function RootLayout({
       <body
         className={`${cairo.variable} font-sans antialiased bg-background text-foreground`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster
-            richColors
-            position="top-center"
-          />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster richColors position="top-center" />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )

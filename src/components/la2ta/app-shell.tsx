@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useHashRoute } from '@/hooks/use-hash-route'
 import SiteHeader from '@/components/la2ta/site-header'
 import SiteFooter from '@/components/la2ta/site-footer'
+import SiteBottomNav from '@/components/la2ta/site-bottom-nav'
 import HomeView from '@/components/la2ta/home-view'
 import OfferDetailsView from '@/components/la2ta/offer-details-view'
 import AdminPanel from '@/components/la2ta/admin/admin-panel'
@@ -27,7 +28,7 @@ export default function AppShell() {
       <div className="flex min-h-dvh w-full flex-col bg-background">
         <SiteHeader />
 
-        <main className="flex-1">
+        <main className="flex-1 pb-24 md:pb-0">
           <AnimatePresence mode="wait">
             {route.name === 'home' && (
               <motion.div key="home" {...pageMotion}>
@@ -59,6 +60,7 @@ export default function AppShell() {
         </main>
 
         <SiteFooter />
+        <SiteBottomNav active={route.name === 'offer' ? 'offers' : 'home'} />
       </div>
     </div>
   )

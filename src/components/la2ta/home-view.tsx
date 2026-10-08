@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Flame, Loader2, Sparkles, XCircle } from 'lucide-react'
 import SearchBar from '@/components/la2ta/search-bar'
 import CategoryChips from '@/components/la2ta/category-chips'
+import DealsHero from '@/components/la2ta/deals-hero'
 import { OfferCard } from '@/components/la2ta/offer-card'
 import EmptyState from '@/components/la2ta/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,7 +16,7 @@ import {
 } from '@/hooks/use-la2ta-api'
 
 const grid =
-  'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+  'grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
 
 export default function HomeView({
   onOpenOffer,
@@ -28,16 +29,11 @@ export default function HomeView({
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const t = setTimeout(
-      () => setDebounced(query.trim()),
-      350
-    )
+    const t = setTimeout(() => setDebounced(query.trim()), 350)
     return () => clearTimeout(t)
   }, [query])
 
-  const isFiltering =
-    debounced.length > 0 ||
-    category !== null
+  const isFiltering = debounced.length > 0 || category !== null
 
   const {
     data: categoriesData,
@@ -64,30 +60,23 @@ export default function HomeView({
   )
 
   const allOffers = useMemo(
-    () =>
-      feedData?.pages.flatMap(
-        (page) => page.offers
-      ) ?? [],
+    () => feedData?.pages.flatMap((page) => page.offers) ?? [],
     [feedData]
   )
 
   const featured = useMemo(
-    () =>
-      allOffers.filter(
-        (offer) => offer.isFeatured
-      ),
+    () => allOffers.filter((offer) => offer.isFeatured),
     [allOffers]
   )
 
-  const results =
-    filteredData?.offers ?? []
+  const results = filteredData?.offers ?? []
 
   const selectedCategoryName = useMemo(() => {
     if (!category) return null
 
-    const selected = (
-      categoriesData?.categories ?? []
-    ).find((item) => item.slug === category)
+    const selected = (categoriesData?.categories ?? []).find(
+      (item) => item.slug === category
+    )
 
     return selected
       ? `${selected.icon ? `${selected.icon} ` : ''}${selected.name}`
@@ -97,32 +86,21 @@ export default function HomeView({
   useEffect(() => {
     const sentinel = loadMoreRef.current
 
-    if (
-      !sentinel ||
-      isFiltering ||
-      !hasNextPage
-    ) {
-      return
-    }
+    if (!sentinel || isFiltering || !hasNextPage) return
 
-    const observer =
-      new IntersectionObserver(
-        (entries) => {
-          if (
-            entries.some(
-              (entry) =>
-                entry.isIntersecting
-            ) &&
-            !isFetchingNextPage
-          ) {
-            void fetchNextPage()
-          }
-        },
-        { rootMargin: '700px 0px' }
-      )
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries.some((entry) => entry.isIntersecting) &&
+          !isFetchingNextPage
+        ) {
+          void fetchNextPage()
+        }
+      },
+      { rootMargin: '700px 0px' }
+    )
 
     observer.observe(sentinel)
-
     return () => observer.disconnect()
   }, [
     isFiltering,
@@ -136,46 +114,50 @@ export default function HomeView({
     setCategory(null)
   }
 
+  const scrollToOffers = () => {
+    document.getElementById('latest-offers')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   const emptyFilterLabel =
-    debounced ||
-    selectedCategoryName ||
-    'الاختيار الحالي'
+    debounced || selectedCategoryName || 'الاختيار الحالي'
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-7 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-7">
+      <DealsHero onBrowse={scrollToOffers} />
+
       <section
         aria-label="البحث في العروض"
-        className="mx-auto w-full max-w-4xl"
+        className="mx-auto mt-5 w-full max-w-4xl sm:mt-6"
       >
-        <SearchBar
-          value={query}
-          onChange={setQuery}
-        />
+        <SearchBar value={query} onChange={setQuery} />
       </section>
 
       <section
+        id="categories"
         aria-label="تصنيفات العروض"
-        className="w-full"
+        className="mt-5 w-full sm:mt-6"
       >
+        <div className="mb-2.5 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black text-primary">اختار اللي يهمك</p>
+            <h2 className="mt-0.5 text-base font-black text-foreground sm:text-lg">
+              اتفرج حسب القسم
+            </h2>
+          </div>
+        </div>
         <CategoryChips
-          categories={
-            categoriesData?.categories ?? []
-          }
+          categories={categoriesData?.categories ?? []}
           active={category}
-          onSelect={(slug) =>
-            setCategory(slug)
-          }
-          isLoading={
-            categoriesLoading
-          }
+          onSelect={(slug) => setCategory(slug)}
+          isLoading={categoriesLoading}
         />
       </section>
 
       {isFiltering ? (
-        <section
-          aria-label="نتائج البحث"
-          className="space-y-4"
-        >
+        <section aria-label="نتائج البحث" className="mt-7 space-y-4">
           <div className="flex items-center justify-between gap-2">
             <h2 className="flex items-center gap-1.5 text-lg font-black text-foreground">
               {filtering && (
@@ -200,14 +182,12 @@ export default function HomeView({
 
           {filtering && results.length === 0 ? (
             <div className={grid}>
-              {Array.from({ length: 10 }).map(
-                (_, i) => (
-                  <Skeleton
-                    key={i}
-                    className="aspect-[4/5] rounded-2xl"
-                  />
-                )
-              )}
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="aspect-[4/5] rounded-2xl"
+                />
+              ))}
             </div>
           ) : results.length === 0 ? (
             <EmptyState
@@ -232,77 +212,73 @@ export default function HomeView({
       ) : (
         <>
           {feedLoading ? (
-            <section
-              aria-label="لقطة اليوم"
-              className="space-y-4"
-            >
+            <section aria-label="لقطة اليوم" className="mt-8 space-y-4">
               <Skeleton className="h-8 w-44" />
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map(
-                  (_, i) => (
-                    <Skeleton
-                      key={i}
-                      className="aspect-[4/3] rounded-2xl"
-                    />
-                  )
-                )}
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="aspect-[4/3] rounded-2xl"
+                  />
+                ))}
               </div>
             </section>
           ) : featured.length > 0 ? (
-            <section
-              aria-label="لقطة اليوم"
-              className="space-y-4"
-            >
-              <h2 className="flex items-center gap-1.5 text-lg font-black text-foreground">
-                <Flame
-                  className="size-5 text-primary"
-                  strokeWidth={2.5}
-                />
-                لقطة اليوم
-              </h2>
+            <section aria-label="لقطة اليوم" className="mt-8 space-y-4">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black text-primary">اختيارات مميزة</p>
+                  <h2 className="mt-0.5 flex items-center gap-1.5 text-lg font-black text-foreground">
+                    <Flame className="size-5 text-primary" strokeWidth={2.5} />
+                    لقطة اليوم
+                  </h2>
+                </div>
+              </div>
 
               <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-0 pb-1 scrollbar-hide lg:grid lg:grid-cols-3 lg:gap-4 lg:overflow-visible">
-                {featured.map(
-                  (offer, index) => (
-                    <OfferCard
-                      key={offer.id}
-                      offer={offer}
-                      onOpen={onOpenOffer}
-                      featured
-                      priority={index === 0}
-                      className="w-[82%] shrink-0 snap-start lg:w-auto"
-                    />
-                  )
-                )}
+                {featured.map((offer, index) => (
+                  <OfferCard
+                    key={offer.id}
+                    offer={offer}
+                    onOpen={onOpenOffer}
+                    featured
+                    priority={index === 0}
+                    className="w-[82%] shrink-0 snap-start lg:w-auto"
+                  />
+                ))}
               </div>
             </section>
           ) : null}
 
           <section
+            id="latest-offers"
             aria-label="أحدث العروض"
-            className="space-y-4"
+            className="mt-9 scroll-mt-24 space-y-4"
           >
-            <div className="flex items-center gap-1.5">
-              <h2 className="flex items-center gap-1.5 text-lg font-black text-foreground">
-                <Sparkles className="size-4.5 text-primary" />
-                أحدث العروض
-              </h2>
-
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
-                {allOffers.length}
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-black text-primary">متجدد باستمرار</p>
+                <h2 className="flex items-center gap-1.5 text-lg font-black text-foreground sm:text-xl">
+                  <Sparkles className="size-4.5 text-primary" />
+                  أحدث العروض
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-black text-primary">
+                    {allOffers.length}
+                  </span>
+                </h2>
+              </div>
+              <span className="hidden rounded-full bg-muted px-3 py-1 text-[11px] font-black text-muted-foreground sm:inline-flex">
+                لقطات جديدة كل فترة 🔥
               </span>
             </div>
 
             {feedLoading ? (
               <div className={grid}>
-                {Array.from({ length: 10 }).map(
-                  (_, i) => (
-                    <Skeleton
-                      key={i}
-                      className="aspect-[4/5] rounded-2xl"
-                    />
-                  )
-                )}
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <Skeleton
+                    key={i}
+                    className="aspect-[4/5] rounded-2xl"
+                  />
+                ))}
               </div>
             ) : allOffers.length === 0 ? (
               <EmptyState
@@ -335,17 +311,33 @@ export default function HomeView({
                   )}
                 </div>
 
-                {!hasNextPage &&
-                  allOffers.length > 0 && (
-                    <p className="pt-1 text-center text-xs font-semibold text-muted-foreground">
-                      خلصت كل اللقطات المتاحة 🔥
-                    </p>
-                  )}
+                {!hasNextPage && allOffers.length > 0 && (
+                  <p className="pt-1 text-center text-xs font-semibold text-muted-foreground">
+                    خلصت كل اللقطات المتاحة 🔥
+                  </p>
+                )}
               </>
             )}
           </section>
         </>
       )}
+
+      <section className="mt-10 overflow-hidden rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,#fff7ed_0%,#ffedd5_70%,#fff_100%)] px-5 py-5 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:px-7">
+        <div>
+          <p className="text-sm font-black text-slate-950">
+            خلّي اللقطات توصلك بدل ما تدور عليها 👀
+          </p>
+          <p className="mt-1 text-xs font-semibold text-slate-600">
+            الحساب اختياري، وهنبني عليه المفضلة والتنبيهات بعد كده.
+          </p>
+        </div>
+        <a
+          href="/account"
+          className="mt-4 inline-flex h-10 shrink-0 items-center justify-center rounded-xl bg-primary px-4 text-xs font-black text-primary-foreground shadow-md shadow-primary/20 sm:mt-0"
+        >
+          اعمل حسابك
+        </a>
+      </section>
     </div>
   )
 }
